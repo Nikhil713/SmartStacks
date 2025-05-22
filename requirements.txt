@@ -1,1 +1,2 @@
 numpy
+di_i2c
