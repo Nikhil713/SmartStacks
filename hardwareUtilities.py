@@ -46,7 +46,7 @@ def sound_oled():
             setRGB(0,128,64)
             setText(msg)
             log(msg)
-            time.sleep(2)
+            time.sleep(5)
             # for c in range(0,255):
             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
             #     setRGB(c,255-c,0)
