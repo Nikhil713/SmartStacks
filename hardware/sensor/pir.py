@@ -4,7 +4,7 @@ import time
 # ------------ Configuration ------------
 PIR_SENSOR_PORT = 7 
 
-def read_pir(pir_port):
+def read_pir():
     """
     Reads PIR sensor value.
     Returns 0 if motion detected (seat occupied), 1 if no motion (seat vacant).
