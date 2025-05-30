@@ -53,7 +53,7 @@ def sound_oled():
             #     time.sleep(0.1)
             setRGB(255,0,0)
             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
-            setText("Bye bye, this should wrap onto next line")
+            # setText("Bye bye, this should wrap onto next line")
             # time.sleep(5)
 
     except KeyboardInterrupt:
