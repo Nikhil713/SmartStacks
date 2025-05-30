@@ -71,8 +71,11 @@ def run_pir_monitor_loop():
     """
     Main loop to monitor PIR sensor and print vacancy status.
     """
-    while True:
-        vacant_seats = read_pir()
-        if vacant_seats is not None:
-            print(f"Vacant Seats: {vacant_seats}")
-        time.sleep(1)
+    try:
+        while True:
+            vacant_seats = read_pir()
+            if vacant_seats is not None:
+                print(f"Vacant Seats: {vacant_seats}")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("PIR process interrupted")
