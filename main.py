@@ -1,9 +1,11 @@
 # from multiprocessing import Process
-from threading import Thread
+from threading import Thread, Event
 import hardwareUtilities as hU
 import sys
 #import schedule
 
+# Create a shared stop signal
+stop_event = Event()
 
 # ---- Parallel Process Launch ---- #
 if __name__ == '__main__':
@@ -31,7 +33,7 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print("Main process interrupted - Terminating child process")
-        Thread.stop_event.set()  # Signal all threads to stop
+        stop_event.set()  # Signal all threads to stop
         # p1.terminate()
         # p2.terminate()
         # p3.terminate()
