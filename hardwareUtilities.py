@@ -48,7 +48,10 @@ def sound_oled():
 
 def run_temperature_control_loop():
     """Main loop to monitor temperature and control fan."""
-    while True:
-        temp = read_temperature()
-        control_fan_based_on_temperature(temp)
-        time.sleep(10)
+    try:
+        while True:
+            temp = read_temperature()
+            control_fan_based_on_temperature(temp)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("SOund-OLED process interrupted")
