@@ -26,7 +26,7 @@ def sound_oled():
             # Sound Sensor + OLED
             sound_value, sound_level = noiseLevel()
             msg = f"Sound: {sound_level}"
-            setText("msg")
+            setText(msg)
             setRGB(0,128,64)
             time.sleep(2)
             for c in range(0,255):
