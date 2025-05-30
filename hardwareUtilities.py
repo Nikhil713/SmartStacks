@@ -40,6 +40,7 @@ def sound_oled():
         while True:
             # Sound Sensor + OLED
             sound_value, sound_level = noiseLevel()
+            print(sound_value)
             msg = f"Sound: {sound_level}"
             setRGB(0,128,64)
             setText(msg)
