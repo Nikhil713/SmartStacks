@@ -26,25 +26,21 @@ def sound_oled():
             # Sound Sensor + OLED
             sound_value, sound_level = noiseLevel()
             msg = f"Sound: {sound_level}"
-            setText(msg)
             setRGB(0,128,64)
+            setText(msg)
             time.sleep(2)
-            for c in range(0,255):
-                setText_norefresh("Going to sleep in {}...".format(str(c)))
-                setRGB(c,255-c,0)
-                time.sleep(0.1)
+            # for c in range(0,255):
+            #     setText_norefresh("Going to sleep in {}...".format(str(c)))
+            #     setRGB(c,255-c,0)
+            #     time.sleep(0.1)
             setRGB(0,255,0)
             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
-            # setText("Bye bye, this should wrap onto next line")
+            setText("Bye bye, this should wrap onto next line")
             time.sleep(1)
 
     except KeyboardInterrupt:
-        print("SOund-OLED process interrupted")
+        print("Sound-OLED process interrupted")
 
-# def read_light():
-#     while True:
-#         print("Reading Light sensor...")
-#         time.sleep(5)
 
 def run_temperature_control_loop():
     """Main loop to monitor temperature and control fan."""
