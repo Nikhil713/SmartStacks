@@ -2,7 +2,7 @@ import time
 from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
 from hardware.sensor.soundSensor import noiseLevel
-from hardware.actuator.LED_Display import *
+from hardware.actuator.LCD_Display import *
 
 
 # ---- Sensor Read Functions ---- #
