@@ -44,7 +44,7 @@ def sound_oled():
             setRGB(0,128,64)
             setText(msg)
             log(msg)
-            time.sleep(2)
+            # time.sleep(2)
             # for c in range(0,255):
             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
             #     setRGB(c,255-c,0)
@@ -52,7 +52,7 @@ def sound_oled():
             setRGB(0,255,0)
             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
             setText("Bye bye, this should wrap onto next line")
-            time.sleep(5)
+            # time.sleep(5)
 
     except KeyboardInterrupt:
         print("Sound-OLED process interrupted")
