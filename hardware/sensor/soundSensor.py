@@ -9,6 +9,7 @@ def noiseLevel():
     try:
         # Read the sound level
         sensor_value = grovepi.analogRead(sound_sensor)
+        print(sensor_value)
         if sensor_value < 100:
             level = "Quiet"
         elif sensor_value < 400:
