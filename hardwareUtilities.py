@@ -38,6 +38,7 @@ def ldr_led():
 def sound_oled():
     try:
         while True:
+            print("sensor_value in hu")
             # Sound Sensor + OLED
             sound_value, sound_level = noiseLevel()
             print(sound_value)
