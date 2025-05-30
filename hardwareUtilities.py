@@ -59,8 +59,11 @@ def run_temperature_control_loop():
     """Main loop to monitor temperature and control fan."""
     try:
         while True:
-            temp = read_temperature()
+            temp, humidity = read_temperature()
             control_fan_based_on_temperature(temp)
+            msgTemp = f"Raw reading: temp={temp}, humidity={humidity}"
+            print(msgTemp)
+            log(msgTemp)
             time.sleep(1)
     except KeyboardInterrupt:
         print("SOund-OLED process interrupted")
