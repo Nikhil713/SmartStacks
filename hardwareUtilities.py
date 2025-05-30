@@ -5,6 +5,7 @@ from hardware.sensor.soundSensor import noiseLevel
 from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
+from hardware.sensor.pir import read_pir
 # ---- Sensor Read Functions ---- #
 
 def ldr_led():
@@ -51,3 +52,13 @@ def run_temperature_control_loop():
             time.sleep(1)
     except KeyboardInterrupt:
         print("SOund-OLED process interrupted")
+
+def run_pir_monitor_loop():
+    """
+    Main loop to monitor PIR sensor and print vacancy status.
+    """
+    while True:
+        vacant_seats = read_pir()
+        if vacant_seats is not None:
+            print(f"Vacant Seats: {vacant_seats}")
+        time.sleep(1)
