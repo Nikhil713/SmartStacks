@@ -29,7 +29,7 @@ def ldr_led():
             ldr_msg = f"LDR raw={raw}, intensity={intensity}, LED PWM={pwm}"
             print(ldr_msg)
             log(ldr_msg)
-            time.sleep(1)
+            time.sleep(5)
 
     except KeyboardInterrupt:
         print("LDR-LED process interrupted")
@@ -44,7 +44,7 @@ def sound_oled():
             setRGB(0,128,64)
             setText(msg)
             log(msg)
-            time.sleep(2)
+            # time.sleep(2)
             # for c in range(0,255):
             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
             #     setRGB(c,255-c,0)
@@ -52,7 +52,7 @@ def sound_oled():
             setRGB(0,255,0)
             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
             setText("Bye bye, this should wrap onto next line")
-            time.sleep(1)
+            # time.sleep(5)
 
     except KeyboardInterrupt:
         print("Sound-OLED process interrupted")
@@ -67,7 +67,7 @@ def run_temperature_control_loop():
             msgTemp = f"Raw reading: temp={temp}, humidity={humidity}"
             print(msgTemp)
             log(msgTemp)
-            time.sleep(1)
+            time.sleep(5)
     except KeyboardInterrupt:
         print("SOund-OLED process interrupted")
 
@@ -80,7 +80,7 @@ def run_pir_monitor_loop():
             vacant_seats = read_pir()
             if vacant_seats is not None:
                 print(f"Vacant Seats: {vacant_seats}")
-            time.sleep(1)
+            time.sleep(5)
     except KeyboardInterrupt:
         print("PIR process interrupted")
 
@@ -93,6 +93,6 @@ def run_ultrasonic_monitor_loop():
             vacant_seats = read_ultrasonic()
             if vacant_seats is not None:
                 print(f"Vacant Seats: {vacant_seats}")
-            time.sleep(1)
+            time.sleep(5)
     except KeyboardInterrupt:
         print("PIR process interrupted")
