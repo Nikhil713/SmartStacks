@@ -3,8 +3,8 @@ from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
 from hardware.sensor.soundSensor import noiseLevel
 from hardware.actuator.LED_Display import show_message
-
-
+from hardware.sensor.temperature import read_temperature
+from hardware.actuator.fan import control_fan_based_on_temperature
 # ---- Sensor Read Functions ---- #
 
 def ldr_led():
@@ -38,3 +38,9 @@ def sound_oled():
 #         print("Reading Light sensor...")
 #         time.sleep(5)
 
+def run_temperature_control_loop():
+    """Main loop to monitor temperature and control fan."""
+    while True:
+        temp = read_temperature()
+        control_fan_based_on_temperature(temp)
+        time.sleep(10)
