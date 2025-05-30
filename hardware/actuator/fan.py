@@ -24,4 +24,19 @@ def set_fan_pwm(speed_level):
     print(f"[FAN] Setting speed level {speed_level} (PWM: {pwm})")
     grovepi.analogWrite(FAN_PWM_PIN, pwm)
 
+# ------------ Control Logic ------------
+def control_fan_based_on_temperature(temp):
+    if temp is None:
+        print("[TEMP] Invalid reading.")
+        return
 
+    print(f"[TEMP] Current temperature: {temp}°C")
+
+    if temp <= 20:
+        set_fan_pwm(0)
+    elif 21 <= temp <= 23:
+        set_fan_pwm(1)
+    elif 24 <= temp <= 26:
+        set_fan_pwm(2)
+    else:
+        set_fan_pwm(3)
