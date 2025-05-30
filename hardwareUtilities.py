@@ -7,6 +7,7 @@ from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
 from hardware.sensor.pir import read_pir
+from hardware.sensor.ultrasonic import read_ultrasonic
 
 LOG_FILE = "device_log.txt"  # or "logs/device_log.txt"
 
@@ -77,6 +78,19 @@ def run_pir_monitor_loop():
     try:
         while True:
             vacant_seats = read_pir()
+            if vacant_seats is not None:
+                print(f"Vacant Seats: {vacant_seats}")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("PIR process interrupted")
+
+def run_ultrasonic_monitor_loop():
+    """
+    Continuously monitors the ultrasonic sensor and prints seat vacancy status.
+    """
+    try:
+        while True:
+            vacant_seats = read_ultrasonic()
             if vacant_seats is not None:
                 print(f"Vacant Seats: {vacant_seats}")
             time.sleep(1)

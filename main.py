@@ -17,7 +17,7 @@ if __name__ == '__main__':
     p1 = Thread(target=hU.ldr_led)
     p2 = Thread(target=hU.sound_oled)
     p3 = Thread(target=hU.run_temperature_control_loop)
-    p4 = Thread(target=hU.run_pir_monitor_loop)
+    p4 = Thread(target=hU.run_ultrasonic_monitor_loop)
     # p3 = Process(target=read_light)
 
     p1.start()
