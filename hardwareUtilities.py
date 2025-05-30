@@ -1,10 +1,21 @@
 import time
+from datetime import datetime
 from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
 from hardware.sensor.soundSensor import noiseLevel
 from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
+
+LOG_FILE = "device_log.txt"  
+
+def log(message):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"[{timestamp}] {message}\n"
+    with open(LOG_FILE, "w") as f:
+        f.write(entry)
+
+
 # ---- Sensor Read Functions ---- #
 
 def ldr_led():
@@ -13,7 +24,9 @@ def ldr_led():
             #LDR + LED
             raw, intensity = read_ldr()
             pwm = set_led(intensity)
-            print(f"LDR raw: {raw}, Intensity: {intensity}, LED PWM: {pwm}")
+            ldr_msg = f"LDR raw={raw}, intensity={intensity}, LED PWM={pwm}"
+            print(ldr_msg)
+            log(ldr_msg)
             time.sleep(1)
 
     except KeyboardInterrupt:
@@ -28,6 +41,7 @@ def sound_oled():
             msg = f"Sound: {sound_level}"
             setRGB(0,128,64)
             setText(msg)
+            log(msg)
             time.sleep(2)
             # for c in range(0,255):
             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
