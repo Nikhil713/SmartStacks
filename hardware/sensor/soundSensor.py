@@ -2,7 +2,7 @@ import grovepi
 
 # Connect the Grove Sound Sensor to analog port A1
 # SIG,NC,VCC,GND
-sound_sensor = 1
+sound_sensor = 0
 grovepi.pinMode(sound_sensor,"INPUT")
 
 def noiseLevel():
