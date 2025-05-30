@@ -8,6 +8,7 @@ grovepi.pinMode(sound_sensor,"INPUT")
 def noiseLevel():
     try:
         # Read the sound level
+        print("sensor_value")
         sensor_value = grovepi.analogRead(sound_sensor)
         print(sensor_value)
         if sensor_value < 100:
