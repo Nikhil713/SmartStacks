@@ -13,7 +13,7 @@ def noiseLevel():
         print(sensor_value)
         if sensor_value < 100:
             level = "Quiet"
-        elif sensor_value < 400:
+        elif sensor_value < 200:
             level = "Normal"
         else:
             level = "Loud"
