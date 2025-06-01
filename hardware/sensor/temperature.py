@@ -1,7 +1,7 @@
 import grovepi
 
 # ------------ Configuration ------------
-TEMP_SENSOR_PORT = 4  # A2 port for temperature sensor (DHT11)
+TEMP_SENSOR_PORT = 4  # D4 port for temperature sensor (DHT11)
 
 
 # ------------ Temperature Reading ------------
