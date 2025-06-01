@@ -8,15 +8,7 @@ from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
 from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
-
-LOG_FILE = "device_log.txt"  # or "logs/device_log.txt"
-
-def log(message):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = f"[{timestamp}] {message}\n"
-    with open(LOG_FILE, "a") as f:
-        f.write(entry)
-    f.close()
+from logger import log
 
 # ---- Sensor Read Functions ---- #
 
@@ -35,29 +27,30 @@ def ldr_led():
         print("LDR-LED process interrupted")
 
 
-def sound_oled():
-    try:
-        while True:
-            print("sensor_value in hu")
-            # Sound Sensor + OLED
-            sound_value, sound_level = noiseLevel()
-            print(sound_value)
-            msg = f"Sound: {sound_level}"
-            setRGB(0,128,64)
-            setText(msg)
-            log(msg)
-            time.sleep(5)
-            # for c in range(0,255):
-            #     setText_norefresh("Going to sleep in {}...".format(str(c)))
-            #     setRGB(c,255-c,0)
-            #     time.sleep(0.1)
-            setRGB(255,0,0)
-            print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
-            # setText("Bye bye, this should wrap onto next line")
-            # time.sleep(5)
+# def sound_lcd():
+#     try:
+#         while True:
+#             print("sensor_value in hu")
+#             # Sound Sensor + OLED
+#             sound_value, sound_level = noiseLevel()
+#             print(sound_value)
+#             msg = f"Sound: {sound_level}"
+#             setRGB(0,128,64)
+#             setText(msg)
+#             setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+#             log(msg)
+#             time.sleep(5)
+#             # for c in range(0,255):
+#             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
+#             #     setRGB(c,255-c,0)
+#             #     time.sleep(0.1)
+#             setRGB(255,0,0)
+#             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
+#             # setText("Bye bye, this should wrap onto next line")
+#             # time.sleep(5)
 
-    except KeyboardInterrupt:
-        print("Sound-OLED process interrupted")
+#     except KeyboardInterrupt:
+#         print("Sound-OLED process interrupted")
 
 
 def run_temperature_control_loop():
@@ -71,7 +64,7 @@ def run_temperature_control_loop():
             log(msgTemp)
             time.sleep(5)
     except KeyboardInterrupt:
-        print("SOund-OLED process interrupted")
+        print("Sound-OLED process interrupted")
 
 def run_pir_monitor_loop():
     """
@@ -97,4 +90,4 @@ def run_ultrasonic_monitor_loop():
                 print(f"Vacant Seats: {vacant_seats}")
             time.sleep(5)
     except KeyboardInterrupt:
-        print("PIR process interrupted")
+        print("Ultrasonic process interrupted")
