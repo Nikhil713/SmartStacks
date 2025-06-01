@@ -9,7 +9,7 @@ from hardware.actuator.fan import control_fan_based_on_temperature
 from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 
-LOG_FILE = "device_log.txt"  # or "logs/device_log.txt"
+LOG_FILE = "device_log.txt"  # Log file 
 
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -45,6 +45,7 @@ def sound_oled():
             msg = f"Sound: {sound_level}"
             setRGB(0,128,64)
             setText(msg)
+            setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             log(msg)
             time.sleep(5)
             # for c in range(0,255):
@@ -71,7 +72,7 @@ def run_temperature_control_loop():
             log(msgTemp)
             time.sleep(5)
     except KeyboardInterrupt:
-        print("SOund-OLED process interrupted")
+        print("Sound-OLED process interrupted")
 
 def run_pir_monitor_loop():
     """
@@ -97,4 +98,4 @@ def run_ultrasonic_monitor_loop():
                 print(f"Vacant Seats: {vacant_seats}")
             time.sleep(5)
     except KeyboardInterrupt:
-        print("PIR process interrupted")
+        print("Ultrasonic process interrupted")
