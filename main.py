@@ -16,18 +16,18 @@ if __name__ == '__main__':
     # p4 = Process(target=hU.run_pir_monitor_loop)
 
     p1 = Thread(target=hU.ldr_led)
-    p2 = Thread(target=hU.sound_lcd)
+    # p2 = Thread(target=hU.sound_lcd)
     p3 = Thread(target=hU.run_temperature_control_loop)
     p4 = Thread(target=hU.run_ultrasonic_monitor_loop)
 
     p1.start()
-    p2.start()
+    # p2.start()
     p3.start()
     p4.start()
 
     try:
         p1.join()
-        p2.join()
+        # p2.join()
         p3.join()
         p4.join()
 
