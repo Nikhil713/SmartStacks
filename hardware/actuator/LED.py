@@ -8,7 +8,7 @@ import grovepi
 # Digital ports that do not support PWM
 # D2, D4, D7, D8
 
-# Connect the LED to digital port D4
+# Connect the LED to digital port D5
 # SIG,NC,VCC,GND
 led_pin = 5
 grovepi.pinMode(led_pin, "OUTPUT")

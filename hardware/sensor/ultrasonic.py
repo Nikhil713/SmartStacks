@@ -1,7 +1,7 @@
 import grovepi
 
 # --- Configuration ---
-ULTRASONIC_PORT = 7          # Digital port D6
+ULTRASONIC_PORT = 7          # Digital port D7
 ULTRASONIC_THRESHOLD = 10    # Distance in cm
 
 def read_ultrasonic():
