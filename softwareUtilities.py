@@ -1,7 +1,7 @@
 import time
 from logger import log
 from datetime import datetime
-from software.sensor.soundSensorSimulated import noiseLevel
+from software.sensor.soundSensorSimulated import get_random_sound_value
 from hardware.actuator.LCD_Display import *
 
 
@@ -10,7 +10,7 @@ def sound_lcd():
         while True:
             print("sensor_value in hu")
             # Sound Sensor + OLED
-            sound_value, sound_level = noiseLevel()
+            sound_value, sound_level = get_random_sound_value()
             print(sound_value)
             msg = f"Sound: {sound_level}"
             setRGB(0,128,64)
