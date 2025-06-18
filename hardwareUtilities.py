@@ -9,6 +9,7 @@ from hardware.actuator.fan import control_fan_based_on_temperature
 from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 from logger import log
+from mqtt.mqtt_client import mqtt_callback
 
 # ---- Sensor Read Functions ---- #
 
@@ -21,6 +22,7 @@ def ldr_led():
             ldr_msg = f"LDR raw={raw}, intensity={intensity}, LED PWM={pwm}"
             print(ldr_msg)
             log(ldr_msg)
+            mqtt_callback(ldr_msg)
             time.sleep(5)
 
     except KeyboardInterrupt:
@@ -62,7 +64,9 @@ def run_temperature_control_loop():
             msgTemp = f"Raw reading: temp={temp}, humidity={humidity}"
             print(msgTemp)
             log(msgTemp)
+            mqtt_callback(msgTemp)
             time.sleep(5)
+
     except KeyboardInterrupt:
         print("Sound-OLED process interrupted")
 
@@ -75,7 +79,9 @@ def run_pir_monitor_loop():
             vacant_seats = read_pir()
             if vacant_seats is not None:
                 print(f"Vacant Seats: {vacant_seats}")
+            mqtt_callback(vacant_seats)
             time.sleep(5)
+
     except KeyboardInterrupt:
         print("PIR process interrupted")
 
@@ -88,6 +94,8 @@ def run_ultrasonic_monitor_loop():
             vacant_seats = read_ultrasonic()
             if vacant_seats is not None:
                 print(f"Vacant Seats: {vacant_seats}")
+            mqtt_callback(vacant_seats)
             time.sleep(5)
+            
     except KeyboardInterrupt:
         print("Ultrasonic process interrupted")
