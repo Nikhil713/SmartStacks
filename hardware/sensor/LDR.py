@@ -1,4 +1,5 @@
 import grovepi
+from mqtt.mqtt_client import mqtt_callback
 
 # Connect the Grove Light Sensor to analog port A0
 # SIG,NC,VCC,GND
@@ -19,6 +20,9 @@ def read_ldr():
             intensity = 1
         else:
             intensity = 0
+
+        mqtt_callback(f"[LDR] Raw: {value}, Intensity: {intensity}")
+
         return value, intensity
     
     # Print "Error" if communication error encountered

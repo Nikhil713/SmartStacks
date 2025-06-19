@@ -1,4 +1,6 @@
 import grovepi
+from mqtt.mqtt_client import mqtt_callback
+
 
 # --- Configuration ---
 ULTRASONIC_PORT = 7          # Digital port D7
@@ -12,7 +14,9 @@ def read_ultrasonic():
     try:
         distance = grovepi.ultrasonicRead(ULTRASONIC_PORT)
         print(f"Ultrasonic Distance: {distance} cm")
+        mqtt_callback(f"[ULTRASONIC] Distance: {distance} cm")
         return 0 if distance < ULTRASONIC_THRESHOLD else 1
+    
     except IOError:
         print("Error reading ultrasonic sensor")
         return None
