@@ -1,4 +1,6 @@
 import random
+from mqtt.mqtt_client import mqtt_callback
+
 
 def get_random_sound_value():
 
@@ -17,6 +19,8 @@ def get_random_sound_value():
             level = "Normal"
         else:
             level = "Loud"
+        mqtt_callback(f"[Sound] Raw: {sensor_value}, Level: {level}")
+
         return sensor_value, level
     
     # Print "Error" if communication error encountered

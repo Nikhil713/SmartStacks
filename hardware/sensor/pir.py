@@ -1,5 +1,6 @@
 import grovepi
 import time
+from mqtt.mqtt_client import mqtt_callback
 
 # ------------ Configuration ------------
 PIR_SENSOR_PORT = 7 
