@@ -31,6 +31,7 @@ if __name__ == '__main__':
         p3.join()
         p4.join()
 
+
     except KeyboardInterrupt:
         print("Main process interrupted - Terminating child process")
         stop_event.set()  # Signal all threads to stop
