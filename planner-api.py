@@ -31,15 +31,16 @@ def plan():
             print("Planner Output:\n", output)
 
             if 'Solution found' in output:
+                # Extract actual plan lines from output
                 plan = []
-                recording = False
                 for line in output.splitlines():
-                    if line.strip().startswith('step'):
-                        recording = True
-                        plan.append(line)
-                    elif recording and line.strip() == "":
-                        break
-                return jsonify({'plan': '\n'.join(plan)})
+                    line = line.strip()
+                    if line and not line.startswith("[") and not line.startswith("INFO") and not line.startswith("search") and not line.startswith("translate") and not line.startswith("Parsing") and "exit code" not in line and "time" not in line and not line.startswith("Peak memory") and "memory" not in line:
+                        # this filters out logs and keeps only actual plan steps like: turn-on (1)
+                        if "Solution found!" not in line and "Solution found." not in line:
+                            plan.append(line)
+
+                return jsonify({'plan': plan})
             else:
                 return jsonify({'plan': None, 'error': 'No plan found'})
         except Exception as e:

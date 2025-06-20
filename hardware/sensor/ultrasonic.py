@@ -12,7 +12,9 @@ def read_ultrasonic():
     try:
         distance = grovepi.ultrasonicRead(ULTRASONIC_PORT)
         print(f"Ultrasonic Distance: {distance} cm")
-        return 0 if distance < ULTRASONIC_THRESHOLD else 1
+        # return 0 if distance < ULTRASONIC_THRESHOLD else 1
+        return distance
+    
     except IOError:
         print("Error reading ultrasonic sensor")
         return None

@@ -2,6 +2,7 @@
 from threading import Thread, Event
 import hardwareUtilities as hU
 import softwareUtilities as sU
+import planner as planner
 import sys
 #import schedule
 
@@ -19,17 +20,21 @@ if __name__ == '__main__':
     p2 = Thread(target=sU.sound_lcd)
     p3 = Thread(target=hU.run_temperature_control_loop)
     p4 = Thread(target=hU.run_ultrasonic_monitor_loop)
+    planner_thread = Thread(target=planner.run_planner)
 
     p1.start()
     p2.start()
     p3.start()
     p4.start()
+    planner_thread.start()
 
     try:
         p1.join()
         p2.join()
         p3.join()
         p4.join()
+        planner_thread.join()
+
 
 
     except KeyboardInterrupt:
