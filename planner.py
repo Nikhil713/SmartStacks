@@ -108,12 +108,13 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
 
         data = response.json()
         full_output = data.get("plan", [])
-        
+        print("Full planner output:", full_output)
+        plan_steps = []
         # Extract only plan steps (ignore log lines)
-        plan_steps = [line for line in full_output if not any(keyword in line.lower() for keyword in [
-            "normalizing", "instantiating", "generating", "building", "translating", 
-            "writing", "done", "cpu", "wall-clock", "axiom", "mutex", "fact", "group", "queue", "removed"
-        ]) and line.strip()]
+        # plan_steps = [line for line in full_output if not any(keyword in line.lower() for keyword in [
+        #     "normalizing", "instantiating", "generating", "building", "translating", 
+        #     "writing", "done", "cpu", "wall-clock", "axiom", "mutex", "fact", "group", "queue", "removed"
+        # ]) and line.strip()]
 
         return plan_steps
 
@@ -214,9 +215,9 @@ def run_planner():
     problem = 'ai_planning/problem.pddl'
     get_sensor_data_and_create_problem_file()
     plan_response = send_pddl_files_and_get_plan(domain, problem)
-    parsed_plan  = parse_plan_response(plan_response)
+    # parsed_plan  = parse_plan_response(plan_response)
     print("Actions to be performed:", parsed_plan )
-    execute_plan(parsed_plan)
+    # execute_plan(parsed_plan)
 
 
         
