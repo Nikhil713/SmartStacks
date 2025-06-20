@@ -37,8 +37,12 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
     facts = []
 
     # Temperature classification
-    if temp < 27:
+    if temp <= 20:
+        facts.append("(temp-very-low)")
+    elif temp <= 23:
         facts.append("(temp-low)")
+    elif temp <= 26:
+        facts.append("(temp-normal)")
     else:
         facts.append("(temp-high)")
 
@@ -49,16 +53,22 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
         facts.append("(normal-humidity)")
 
     # Light
-    if light < 50:
-        facts.append("(dark)")
+    if light <= 200:
+        facts.append("(very-dark-light)")
+    elif light <= 500:
+        facts.append("(dark-light)")
+    elif light <= 800:
+        facts.append("(normal-light)")
     else:
-        facts.append("(bright)")
+        facts.append("(bright-light)")
 
     # Sound
-    if sound > 100:
-        facts.append("(noisy)")
-    else:
-        facts.append("(quiet)")
+    # if sound <= 100:
+    #     facts.append("(quiet)")
+    # elif sound <= 200:
+    #     facts.append("(normal)")
+    # else:
+    #     facts.append("(loud)")
 
     # Occupancy
     facts.append("(seat-occupied)" if occupied else "(seat-empty)")
@@ -216,7 +226,7 @@ def run_planner():
     get_sensor_data_and_create_problem_file()
     plan_response = send_pddl_files_and_get_plan(domain, problem)
     # parsed_plan  = parse_plan_response(plan_response)
-    print("Actions to be performed:", parsed_plan )
+    # print("Actions to be performed:", parsed_plan )
     # execute_plan(parsed_plan)
 
 
