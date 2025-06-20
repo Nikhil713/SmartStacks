@@ -12,7 +12,7 @@ from hardware.actuator.fan import control_fan_based_on_temperature
 from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 
-from software import get_weather
+from software.weather_api import get_weather
 from logger import log
 
 import requests
@@ -28,7 +28,7 @@ def get_sensor_data_and_create_problem_file():
         occupied = True
     else:
         occupied = False
-    write_problem_pddl(temp, humidity, intensity, sound_level, api_temp, api_humidity, occupied)
+    write_problem_pddl(temp, humidity, intensity, sound_value, api_temp, api_humidity, occupied)
 
 
 
@@ -55,7 +55,7 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
         facts.append("(bright)")
 
     # Sound
-    if sound > 60:
+    if sound > 100:
         facts.append("(noisy)")
     else:
         facts.append("(quiet)")
@@ -90,6 +90,9 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
         )
     )
     """)
+        
+    print("Facts written to problem.pddl:", facts)
+    print("Goal written to problem.pddl:", goal.strip())
 
 def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
     server_url='http://127.0.0.1:5000/plan'
