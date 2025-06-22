@@ -46,12 +46,12 @@
  ;; Light control
   (:action turn-on-light-from-very-dark
     :precondition (and (very-dark-light) (seat-occupied))
-    :effect (and (bright-light) (comfortable-lighting))
+    :effect (and (bright-light) (comfortable-lighting)(mold-risk-low-lighting))
   )
 
   (:action turn-on-light-from-dark
     :precondition (and (dark-light) (seat-occupied))
-    :effect (and (bright-light) (comfortable-lighting))
+    :effect (and (bright-light) (comfortable-lighting)(mold-risk-low-lighting))
   )
 
   (:action turn-off-light
@@ -79,7 +79,7 @@
 
   (:action comfortable-temp-and-humidity
     :precondition (and (temp-normal) (normal-humidity))
-    :effect (and (comfortable-temph))
+    :effect (and (comfortable-temph)(mold-risk-low-temph))
   )
 
   ;; Noise alert
@@ -92,6 +92,11 @@
   (:action display-message
     :precondition (and (seat-occupied))
     :effect (comfortable)
+  )
+
+  (:action environment-is-mold-risk-low
+    :precondition (and (mold-risk-low-lighting) (mold-risk-low-temph))
+    :effect (and (mold-risk-low-temph))
   )
 
   (:action environment-is-comfortable

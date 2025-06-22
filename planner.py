@@ -73,7 +73,7 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
 
     goal = """
         (and
-            (mold-risk-low)
+            (mold-risk-low-temph)
             (comfortable-temph)
         )
     """ if occupied else """
@@ -238,6 +238,7 @@ def run_planner():
             print("Actions to be performed:", parsed_plan)
 
             execute_plan(parsed_plan)
+            time.sleep(5)
 
         except Exception as e:
             log(f"Planner error: {e}")
