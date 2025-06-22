@@ -38,16 +38,14 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
 
     # Temperature classification
     if temp <= 20:
-        facts.append("(temp-very-low)")
-    elif temp <= 23:
         facts.append("(temp-low)")
-    elif temp <= 26:
-        facts.append("(temp-normal)")
-    else:
+    elif temp >= 30:
         facts.append("(temp-high)")
+    else:
+        facts.append("(temp-normal)")
 
     # Humidity
-    if humidity > 70:
+    if humidity >= 60:
         facts.append("(high-humidity)")
     else:
         facts.append("(normal-humidity)")
@@ -76,7 +74,7 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
     goal = """
         (and
             (mold-risk-low)
-            (comfortable)
+            (comfortable-temph)
         )
     """ if occupied else """
         (and

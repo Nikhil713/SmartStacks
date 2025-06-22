@@ -1,6 +1,6 @@
 (define (domain environment-control)
   (:requirements :strips :typing)
-  
+
   (:types
     location
   )
@@ -31,58 +31,55 @@
     (seat-empty)
     (seat-occupied)
 
+    ;; Derived/computed comfort states
+    (comfortable-lighting)
+    (comfortable-temph)
+    (comfortable-noise-level)
+    (no-light)
+
     ;; Goals
     (mold-risk-low)
     (energy-saved)
     (comfortable)
   )
 
-  ;; Light control
-  (:action turn-on-light
+ ;; Light control
+  (:action turn-on-light-from-very-dark
     :precondition (and (very-dark-light) (seat-occupied))
-    :effect (and (bright-light)(comfortable-lighting))
+    :effect (and (bright-light) (comfortable-lighting))
   )
 
-  (:action turn-on-light
+  (:action turn-on-light-from-dark
     :precondition (and (dark-light) (seat-occupied))
-    :effect (and (bright-light)(comfortable-lighting))
-  )
-
-  (:action turn-on-light
-    :precondition (and (very-dark-light) (seat-occupied))
-    :effect (and (bright-light)(comfortable-lighting))
+    :effect (and (bright-light) (comfortable-lighting))
   )
 
   (:action turn-off-light
-    :precondition ((seat-empty))
+    :precondition (and (seat-empty))
     :effect (and (no-light) (energy-saved))
   )
 
+
   ;; Fan control (extend as needed)
-  (:action reduce-fan-speed
-    :precondition (and (temp-very-low)(seat-occupied))
-    :effect (and (temp-normal) (comfortable-temp))
-  )
   
-  (:action reduce-fan-speed
-    :precondition (and (temp-low)(seat-occupied))
-    :effect (and (temp-normal) (comfortacomfortable-tempble))
-  )
-
-  (:action turn-on-fan
-    :precondition (and (temp-high) (seat-occupied))
-    :effect (and (temp-normal) (comfortable-temp))
-  )
-
   (:action turn-off-fan
-    :precondition (and (temp-low) (seat-empty))
-    :effect (and (energy-saved))
+    :precondition (and (temp-low))
+    :effect (and (temp-normal) (comfortable-temph))
   )
 
-  ;; Humidity control
-  (:action reduce-humidity
+  (:action adjust-fan-to-reduce-temp
+    :precondition (and (temp-high) (seat-occupied))
+    :effect (and (temp-normal))
+  )
+
+  (:action adjust-fan-to-reduce-humidity
     :precondition (and (high-humidity))
-    :effect (and (normal-humidity) (mold-risk-low))
+    :effect (and (normal-humidity))
+  )
+
+  (:action comfortable-temp-and-humidity
+    :precondition (and (temp-normal) (normal-humidity))
+    :effect (and (comfortable-temph))
   )
 
   ;; Noise alert
@@ -98,7 +95,7 @@
   )
 
   (:action environment-is-comfortable
-    :precondition (and (comfortable-lighting) (comfortable-temp) (comfortable-noise-level))
+    :precondition (and (comfortable-lighting) (comfortable-temph) (comfortable-noise-level))
     :effect (and (comfortable))
   )
   
