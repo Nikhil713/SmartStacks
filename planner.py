@@ -3,7 +3,7 @@ import subprocess
 from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
 
-from hardware.sensor.soundSensor import noiseLevel
+from hardware.sensor.soundSensor import get_random_sound_value
 from hardware.actuator.LCD_Display import *
 
 from hardware.sensor.temperature import read_temperature
@@ -21,14 +21,14 @@ def get_sensor_data_and_create_problem_file():
     raw_light, intensity = read_ldr()
     temp, humidity = read_temperature()
     distance = read_ultrasonic()
-    sound_value, sound_level = noiseLevel()
+    sound_value = get_random_sound_value()
     api_temp, api_humidity = get_weather()
 
     if distance < 20:
         occupied = True
     else:
         occupied = False
-    write_problem_pddl(temp, humidity, intensity, sound_value, api_temp, api_humidity, occupied)
+    write_problem_pddl(temp, humidity, raw_light, sound_value, api_temp, api_humidity, occupied)
 
 
 
@@ -61,25 +61,25 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
         facts.append("(bright-light)")
 
     # Sound
-    # if sound <= 100:
-    #     facts.append("(quiet)")
-    # elif sound <= 200:
-    #     facts.append("(normal)")
-    # else:
-    #     facts.append("(loud)")
+    if sound <= 200:
+        facts.append("(quiet)")
+    elif sound <= 500:
+        facts.append("(normal)")
+    else:
+        facts.append("(loud)")
 
     # Occupancy
     facts.append("(seat-occupied)" if occupied else "(seat-empty)")
 
     goal = """
         (and
-            (mold-risk-low-temph)
+            (comfortable-lighting)
             (comfortable-temph)
+            (comfortable-noise-level)
         )
     """ if occupied else """
         (and
             (mold-risk-low)
-            (energy-saved)
         )
     """
 
@@ -116,7 +116,7 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
 
         data = response.json()
         full_output = data.get("plan", [])
-        print("Full planner output:", full_output)
+        # print("Full planner output:", full_output)
         plan_steps = []
         # Extract only plan steps (ignore log lines)
         plan_steps = [line for line in full_output if not any(keyword in line.lower() for keyword in [
@@ -153,15 +153,11 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
     #     return None
 
 def extract_plan_lines(planner_output):
-    """
-    Extracts only the valid plan lines from full planner output.
-    """
     plan_lines = []
 
     for line in planner_output:
         stripped = line.strip().lower()
 
-        # Heuristics to detect likely plan lines
         if not stripped:
             continue
         if any(stripped.startswith(prefix) for prefix in [
@@ -177,21 +173,45 @@ def extract_plan_lines(planner_output):
 
     return plan_lines
 
+def parse_plan_response(plan_lines):
+    parsed_plan = []
+
+    for line in plan_lines:
+        line = line.strip()
+        if not line or line.startswith(";"):
+            continue
+
+        # Remove numbering if present (e.g., "1: turn-on room")
+        if ':' in line:
+            line = line.split(':', 1)[1].strip()
+
+        if '(' in line and ')' in line:
+            action = line.split('(')[0].strip()
+            args = line[line.find('(') + 1:line.find(')')].split()
+        else:
+            parts = line.split()
+            action = parts[0]
+            args = parts[1:]
+
+        parsed_plan.append((action, args))
+
+    return parsed_plan
+
 
 def execute_plan(parsed_plan):
     for action_name, args in parsed_plan:
-        print(f"Executing action: {action_name} with args {args}")
-        execute_actions(action_name, args)
+        print(f"Executing action: {action_name}")
+        execute_actions(action_name)
 
-def execute_actions(action_name, args):
-    if action_name == "max-light":
-        set_led(3)  # Set LED to maximum brightness
-    elif action_name == "great-light":
-        set_led(2)  # Dim the LED
-    elif action_name == "dim-light":
-        set_led(2)  # Dim the LED
+def execute_actions(action_name):
+    if action_name == "adjust-light-to-level-three":
+        pwm = set_led(3)
+    elif action_name == "adjust-light-to-level-two":
+        pwm = set_led(2)
+    elif action_name == "turn-on-light-to-level-one-very-dark" or "turn-on-light-to-level-one-dark" or "adjust-light-to-level-one":
+        pwm = set_led(1)
     elif action_name == "turn-off-light":
-        set_led(0)
+        pwm = set_led(0)
 
     # elif action_name == "turn-on-fan":
     #     control_fan_based_on_temperature(force_on=True)
@@ -208,13 +228,16 @@ def execute_actions(action_name, args):
 
     # Extend with more actions
     else:
-        print(f"Unknown action: {action_name} with args {args}")
+        print(f"Unknown action: {action_name}")
+    
+    
 
     
 
 def run_planner():
-    while True:
-        try:
+    
+    try:
+        while True:
             domain = 'ai_planning/domain.pddl'
             problem = 'ai_planning/problem.pddl'
             # Get sensor data and create problem file
@@ -222,23 +245,24 @@ def run_planner():
 
             # Send PDDL files and get plan
             
-            plan_response = send_pddl_files_and_get_plan(domain, problem)
+            planner_output = send_pddl_files_and_get_plan(domain, problem)
 
-            if not plan_response:
-                print("No valid plan found.")
+            if not planner_output:
+                print("No plan recieved. Environment is in ideal conditions")
                 time.sleep(5)
                 continue
 
-            parsed_plan = extract_plan_lines(plan_response)
+            plan_lines = extract_plan_lines(planner_output)
+            parsed_plan = parse_plan_response(plan_lines)
             print("Actions to be performed:", parsed_plan)
 
-            # execute_plan(parsed_plan)
+            execute_plan(parsed_plan)
             time.sleep(5)
 
-        except Exception as e:
-            log(f"Planner error: {e}")
-        
-        # Sleep or wait for next iteration
-        # time.sleep(5)  # Adjust as needed
+    except Exception as e:
+        log(f"Planner error: {e}")
+    
+    # Sleep or wait for next iteration
+    # time.sleep(5)  # Adjust as needed
 
         

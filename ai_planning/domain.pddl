@@ -41,24 +41,38 @@
     (mold-risk-low)
     (mold-risk-low-lighting) 
     (mold-risk-low-temph)
-    (energy-saved)
     (comfortable)
   )
 
  ;; Light control
-  (:action turn-on-light-from-very-dark
+  (:action turn-on-light-to-level-one-very-dark
+    :precondition (and (very-dark-light) (seat-empty))
+    :effect (and (mold-risk-low-lighting))
+  )
+  (:action turn-on-light-to-level-one-dark
+    :precondition (and (dark-light) (seat-empty))
+    :effect (and (mold-risk-low-lighting))
+  )
+  (:action nothing-to-do-for-normal-light
+    :precondition (and (normal-light))
+    :effect (and (mold-risk-low-lighting))
+  )
+
+  (:action adjust-light-to-level-three
     :precondition (and (very-dark-light) (seat-occupied))
-    :effect (and (bright-light) (comfortable-lighting)(mold-risk-low-lighting))
+    :effect (and (comfortable-lighting))
   )
-
-  (:action turn-on-light-from-dark
+  (:action adjust-light-to-level-two
     :precondition (and (dark-light) (seat-occupied))
-    :effect (and (bright-light) (comfortable-lighting)(mold-risk-low-lighting))
+    :effect (and (comfortable-lighting))
   )
-
+  (:action adjust-light-to-level-one
+    :precondition (and (normal-light) (seat-occupied))
+    :effect (and (comfortable-lighting))
+  )
   (:action turn-off-light
-    :precondition (and (seat-empty))
-    :effect (and (no-light) (energy-saved))
+    :precondition (and (bright-light))
+    :effect (and (comfortable-lighting)(mold-risk-low-lighting))
   )
 
 
@@ -66,7 +80,7 @@
   
   (:action turn-off-fan
     :precondition (and (temp-low))
-    :effect (and (temp-normal) (comfortable-temph))
+    :effect (and (temp-normal))
   )
 
   (:action adjust-fan-to-reduce-temp
@@ -76,7 +90,7 @@
 
   (:action adjust-fan-to-reduce-humidity
     :precondition (and (high-humidity))
-    :effect (and (normal-humidity))
+    :effect (and (normal-humidity)(mold-risk-low-temph))
   )
 
   (:action comfortable-temp-and-humidity
@@ -85,8 +99,16 @@
   )
 
   ;; Noise alert
-  (:action alert-noise
-    :precondition (and (loud) (seat-occupied))
+  (:action nothing-to-do-for-quiet-sound
+  :precondition (and (quiet))
+  :effect (comfortable-noise-level)  ;; Placeholder effect
+  )
+  (:action nothing-to-do-for-normal-sound
+  :precondition (and (normal))
+  :effect (comfortable-noise-level)  ;; Placeholder effect
+  )
+  (:action alert-in-lcd-for-noise-level
+    :precondition (and (loud))
     :effect (comfortable-noise-level)  ;; Placeholder effect
   )
 
@@ -98,12 +120,7 @@
 
   (:action environment-is-mold-risk-low
     :precondition (and (mold-risk-low-lighting) (mold-risk-low-temph))
-    :effect (and (mold-risk-low-temph))
-  )
-
-  (:action environment-is-comfortable
-    :precondition (and (comfortable-lighting) (comfortable-temph) (comfortable-noise-level))
-    :effect (and (comfortable))
+    :effect (and (mold-risk-low))
   )
   
 )
