@@ -39,6 +39,8 @@
 
     ;; Goals
     (mold-risk-low)
+    (mold-risk-low-lighting) 
+    (mold-risk-low-temph)
     (energy-saved)
     (comfortable)
   )

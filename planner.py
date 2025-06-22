@@ -119,10 +119,10 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
         print("Full planner output:", full_output)
         plan_steps = []
         # Extract only plan steps (ignore log lines)
-        # plan_steps = [line for line in full_output if not any(keyword in line.lower() for keyword in [
-        #     "normalizing", "instantiating", "generating", "building", "translating", 
-        #     "writing", "done", "cpu", "wall-clock", "axiom", "mutex", "fact", "group", "queue", "removed"
-        # ]) and line.strip()]
+        plan_steps = [line for line in full_output if not any(keyword in line.lower() for keyword in [
+            "normalizing", "instantiating", "generating", "building", "translating", 
+            "writing", "done", "cpu", "wall-clock", "axiom", "mutex", "fact", "group", "queue", "removed"
+        ]) and line.strip()]
 
         return plan_steps
 
@@ -232,12 +232,13 @@ def run_planner():
 
             if not plan_response:
                 print("No valid plan found.")
+                time.sleep(5)
                 continue
 
             parsed_plan = parse_plan_response(plan_response)
             print("Actions to be performed:", parsed_plan)
 
-            execute_plan(parsed_plan)
+            # execute_plan(parsed_plan)
             time.sleep(5)
 
         except Exception as e:
