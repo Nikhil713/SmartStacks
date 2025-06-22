@@ -152,37 +152,31 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
     #     print(f"Error running planner: {e}")
     #     return None
 
-def parse_plan_response(plan_lines):
+def extract_plan_lines(planner_output):
     """
-    Parses a list of plan steps like:
-    ["turn-on (1)", "adjust-fan room high", ...]
-    into a list of clean action tuples:
-    [("turn-on", ["1"]), ("adjust-fan", ["room", "high"])]
+    Extracts only the valid plan lines from full planner output.
     """
-    parsed_plan = []
+    plan_lines = []
 
-    for line in plan_lines:
-        line = line.strip()
+    for line in planner_output:
+        stripped = line.strip().lower()
 
-        if not line or line.startswith(";"):
-            continue  # Skip comments or empty lines
+        # Heuristics to detect likely plan lines
+        if not stripped:
+            continue
+        if any(stripped.startswith(prefix) for prefix in [
+            'normalizing', 'instantiating', 'generating', 'computing',
+            'building', 'processing', 'detecting', 'reordering',
+            'translator', 'done', 'remove', 'writing'
+        ]):
+            continue
+        if any(kw in stripped for kw in ['cpu', 'wall-clock', 'mutex', 'axiom', 'proposition']):
+            continue
+        if any(char.isdigit() for char in stripped) and '(' in stripped and ')' in stripped:
+            plan_lines.append(line.strip())
 
-        # Remove numbering if present (e.g., "1: turn-on room")
-        if ':' in line:
-            line = line.split(':', 1)[1].strip()
+    return plan_lines
 
-        # Extract action and parameters
-        if '(' in line and ')' in line:
-            action = line.split('(')[0].strip()
-            args = line[line.find('(') + 1:line.find(')')].split()
-        else:
-            parts = line.split()
-            action = parts[0]
-            args = parts[1:]
-
-        parsed_plan.append((action, args))
-
-    return parsed_plan
 
 def execute_plan(parsed_plan):
     for action_name, args in parsed_plan:
@@ -235,7 +229,7 @@ def run_planner():
                 time.sleep(5)
                 continue
 
-            parsed_plan = parse_plan_response(plan_response)
+            parsed_plan = extract_plan_lines(plan_response)
             print("Actions to be performed:", parsed_plan)
 
             # execute_plan(parsed_plan)
