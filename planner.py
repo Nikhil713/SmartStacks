@@ -221,13 +221,30 @@ def execute_actions(action_name, args):
     
 
 def run_planner():
-    domain = 'ai_planning/domain.pddl'
-    problem = 'ai_planning/problem.pddl'
-    get_sensor_data_and_create_problem_file()
-    plan_response = send_pddl_files_and_get_plan(domain, problem)
-    # parsed_plan  = parse_plan_response(plan_response)
-    # print("Actions to be performed:", parsed_plan )
-    # execute_plan(parsed_plan)
+    while True:
+        try:
+            domain = 'ai_planning/domain.pddl'
+            problem = 'ai_planning/problem.pddl'
+            # Get sensor data and create problem file
+            get_sensor_data_and_create_problem_file()
 
+            # Send PDDL files and get plan
+            
+            plan_response = send_pddl_files_and_get_plan(domain, problem)
+
+            if not plan_response:
+                print("No valid plan found.")
+                continue
+
+            parsed_plan = parse_plan_response(plan_response)
+            print("Actions to be performed:", parsed_plan)
+
+            execute_plan(parsed_plan)
+
+        except Exception as e:
+            log(f"Planner error: {e}")
+        
+        # Sleep or wait for next iteration
+        # time.sleep(5)  # Adjust as needed
 
         

@@ -1,11 +1,10 @@
-
 (define (problem smart-library)
         (:domain environment-control)
         (:objects
             room - location
         )
         (:init
-            (temp-high) (normal-humidity) (dark) (noisy) (seat-empty)
+            (temp-high) (normal-humidity) (very-dark-light) (seat-empty)
         )
         (:goal
 

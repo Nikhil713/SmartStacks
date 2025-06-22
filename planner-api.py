@@ -28,7 +28,7 @@ def plan():
             result = subprocess.run(cmd, cwd='/home/pi/downward',
                                     capture_output=True, text=True, timeout=30)
             output = result.stdout
-            print("Planner Output:\n", output)
+            print("Planner Output:\n\n", output, "\n\n")
 
             if 'Solution found' in output:
                 # Extract actual plan lines from output
