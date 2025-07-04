@@ -2,6 +2,7 @@
 import smbus
 import time
 import threading
+import sys
 
 # Global I2C lock to prevent concurrent I2C access
 i2c_lock = threading.Lock()
@@ -11,7 +12,18 @@ DISPLAY_TEXT_ADDR = 0x3e
 DISPLAY_RGB_ADDR = 0x62
 
 # Initialize I2C bus (1 for Raspberry Pi newer models)
-bus = smbus.SMBus(1)
+if sys.platform == 'uwp':
+    import winrt_smbus as smbus
+    bus = smbus.SMBus(1)
+else:
+    import smbus
+    import RPi.GPIO as GPIO
+    rev = GPIO.RPI_REVISION
+    if rev == 2 or rev == 3:
+        bus = smbus.SMBus(1)
+    else:
+        bus = smbus.SMBus(0)
+
 
 def textCommand(cmd):
     """Send a command byte to the LCD."""

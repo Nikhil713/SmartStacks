@@ -20,7 +20,6 @@ def sound_lcd():
             setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             # mqtt_callback(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             log(msg)
-            time.sleep(5)
             # for c in range(0,255):
             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
             #     setRGB(c,255-c,0)
@@ -28,7 +27,7 @@ def sound_lcd():
             setRGB(255,0,0)
             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
             # setText("Bye bye, this should wrap onto next line")
-            # time.sleep(5)
+            time.sleep(5)
 
     except KeyboardInterrupt:
         print("Sound-OLED process interrupted")
