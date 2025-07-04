@@ -16,9 +16,9 @@ def sound_lcd():
             msg = f"Sound: {sound_level}"
             setRGB(0,128,64)
             setText(msg)
-            mqtt_callback(msg)
+            # mqtt_callback(msg)
             setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            mqtt_callback(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            # mqtt_callback(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             log(msg)
             time.sleep(5)
             # for c in range(0,255):
