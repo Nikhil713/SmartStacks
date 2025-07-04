@@ -1,13 +1,16 @@
 # LCD_Display.py
 import smbus
 import time
-from i2c_lock import i2c_lock
+import threading
 
-# I2C addresses
+# Global I2C lock to prevent concurrent I2C access
+i2c_lock = threading.Lock()
+
+# I2C addresses for the Grove LCD
 DISPLAY_TEXT_ADDR = 0x3e
 DISPLAY_RGB_ADDR = 0x62
 
-# Setup I2C bus
+# Initialize I2C bus (1 for Raspberry Pi newer models)
 bus = smbus.SMBus(1)
 
 def textCommand(cmd):
