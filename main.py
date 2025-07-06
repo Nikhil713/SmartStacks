@@ -19,17 +19,20 @@ if __name__ == '__main__':
     p2 = Thread(target=sU.sound_lcd)
     p3 = Thread(target=hU.run_temperature_control_loop)
     p4 = Thread(target=hU.run_ultrasonic_monitor_loop)
+    p5 = Thread(target=sU.mold_prediction)
 
     p1.start()
     p2.start()
     p3.start()
     p4.start()
+    p5.start()
 
     try:
         p1.join()
         p2.join()
         p3.join()
         p4.join()
+        p5.join()
 
 
     except KeyboardInterrupt:

@@ -2,11 +2,14 @@
 
 import requests
 
+
+# API configurations
 API_KEY = "76e536f0e9933666a4713c1b5eb2f94a"
 CITY = "Stuttgart"
 LAT = "48.7758"  # Stuttgart latitude
 LON = "9.1829"   # Stuttgart longitude
 URL = f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}"
+COUNTRY = "XX"  # Country code like "IN", "GB", "US"
 
 def get_weather():
     try:
