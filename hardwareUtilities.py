@@ -17,9 +17,9 @@ def ldr_led():
         while True:
             #LDR + LED
             raw, intensity = read_ldr()
-            pwm = set_led(intensity)
-            ldr_msg = f"LDR raw={raw}, intensity={intensity}, LED PWM={pwm}"
-            print(ldr_msg)
+            # pwm = set_led(intensity)
+            ldr_msg = f"LDR raw={raw}, intensity={intensity}"
+            # print(ldr_msg)
             log(ldr_msg)
             # mqtt_callback(ldr_msg)
             time.sleep(5)
