@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
-from hardware.sensor.soundSensor import noiseLevel
 from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature

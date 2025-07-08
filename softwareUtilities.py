@@ -3,9 +3,10 @@ from logger import log
 from datetime import datetime
 from software.sensor.soundSensorSimulated import get_random_sound_value
 from hardware.actuator.LCD_Display import *
+from hardware.sensor.temperature import read_temperature
 from mqtt.mqtt_client import mqtt_callback
 from software.mold_risk import *
-
+from software.weather_api import get_weather
 
 def sound_lcd():
     try:
@@ -37,8 +38,7 @@ def sound_lcd():
             time.sleep(5)
 
     except KeyboardInterrupt:
-        print("Sound-OLED process interrupted")
-
+        print("Sound-OLED process interrupted")
 
 def mold_prediction():
     try:

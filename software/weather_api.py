@@ -16,7 +16,7 @@ def get_weather():
         response = requests.get(URL)
         data = response.json()
         # print(f"Weather data for {CITY}: {data}")
-        temp = data["main"]["temp"]
+        temp = data["main"]["temp"] - 273.15
         humidity = data["main"]["humidity"]
         return temp, humidity
     except Exception as e:
@@ -24,4 +24,4 @@ def get_weather():
         return None, None
 
 temp, humidity = get_weather()
-print(f"Temperature: {temp}K, Humidity: {humidity}%")
+print(f"Temperature: {temp}C, Humidity: {humidity}%")
