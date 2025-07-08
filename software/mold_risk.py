@@ -1,8 +1,6 @@
 # mold_risk.py
 
 import math
-from hardware.sensor.temperature import read_temperature
-from weather_api import get_weather
 from mqtt.mqtt_client import mqtt_callback
 import csv
 import os
