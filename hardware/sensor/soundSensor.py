@@ -1,24 +1,22 @@
-import grovepi
+import random
+from mqtt.mqtt_client import mqtt_callback
 
-# Connect the Grove Sound Sensor to analog port A1
-# SIG,NC,VCC,GND
-sound_sensor = 1
-grovepi.pinMode(sound_sensor,"INPUT")
 
-def noiseLevel():
+def get_random_sound_value():
+
+    """
+    Returns a random integer simulating an analog sound sensor reading.
+    
+    Range: 0 (silent) to 1023 (loud)
+    """
+
     try:
-        # Read the sound level
-        print("sensor_value")
-        sensor_value = grovepi.analogRead(sound_sensor)
+        sensor_value = random.randint(0, 300)
         print(sensor_value)
-        if sensor_value < 100:
-            level = "Quiet"
-        elif sensor_value < 200:
-            level = "Normal"
-        else:
-            level = "Loud"
-        return sensor_value, level
+        mqtt_callback(f"[Sound] Raw: {sensor_value}")
+
+        return sensor_value
     
     # Print "Error" if communication error encountered
-    except IOError:				
+    except Exception as e:	
         print ("Error")
