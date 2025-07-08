@@ -27,21 +27,21 @@ def set_fan_pwm(speed_level):
 # ------------ Control Logic ------------
 def control_fan_based_on_temperature(temp):
     try:
-        while True:
-            if temp is None:
-                print("[TEMP] Invalid reading.")
-                return
+        
+        if temp is None:
+            print("[TEMP] Invalid reading.")
+            return
 
-            print(f"[TEMP] Current temperature: {temp}°C")
+        print(f"[TEMP] Current temperature: {temp}°C")
 
-            if temp <= 20:
-                set_fan_pwm(0)
-            elif 21 <= temp <= 23:
-                set_fan_pwm(1)
-            elif 24 <= temp <= 26:
-                set_fan_pwm(2)
-            else:
-                set_fan_pwm(3)
+        if temp <= 20:
+            set_fan_pwm(0)
+        elif 21 <= temp <= 23:
+            set_fan_pwm(1)
+        elif 24 <= temp <= 26:
+            set_fan_pwm(2)
+        else:
+            set_fan_pwm(3)
 
     except IOError:
         print("IO error")
