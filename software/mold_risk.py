@@ -36,7 +36,7 @@ def check_mold_risk(int_temp, int_rh, ext_temp, ext_rh):
         risk = "LOW"
 
     # mqtt_callback(f"[Mold Risk] Level: {risk}")
-    return risk, mold_risk_level
+    return risk, passed
 
 
 # -------- CSV Logger --------

@@ -40,8 +40,8 @@ def get_sensor_data_and_create_problem_file():
     api_temp, api_humidity = get_weather()
     print("Inside sensor data code 5")
     # Mold risk - compound sensor
-    risk, mold_risk_level = 1,2
-    # risk, mold_risk_level = check_mold_risk(temp, humidity, api_temp, api_humidity)
+    # risk, mold_risk_level = 1,2
+    risk, mold_risk_level = check_mold_risk(temp, humidity, api_temp, api_humidity)
     print("Inside sensor data code 6")
     
     #Sensor data
