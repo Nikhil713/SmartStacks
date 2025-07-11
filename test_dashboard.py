@@ -7,11 +7,14 @@ import datetime
 import threading
 import paho.mqtt.client as mqtt
 import re
+import json
 
 # Constants
 MAX_LENGTH = 50
 MQTT_BROKER = "test.mosquitto.org"
-MQTT_TOPIC = "smartstacks/sensors"
+TOPIC_SENSORS = "smartstacks/sensors"
+TOPIC_ACTUATORS = "smartstacks/actuators"
+TOPIC_PLAN = "smartstacks/plan"
 
 timestamps = deque(maxlen=MAX_LENGTH)
 temperature_data = deque(maxlen=MAX_LENGTH)
@@ -26,11 +29,11 @@ plan_instructions = [
 def init_sensor_state():
     return {
         'temperature': 38.0,
-        'noise': 70.0,
+        'sound': 70.0,
         'ultrasonic' :170,
         'humidity': 45.0,
         'fan_speed': 2,
-        'lighting_level': 3,
+        'raw_light': 3,
         'vacant_seats': 1,
         'noise_level': 'High',
         'outside_light': 86
@@ -40,36 +43,47 @@ sensor_state = init_sensor_state()
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with result code", rc)
-    client.subscribe(MQTT_TOPIC)
+    client.subscribe([(TOPIC_SENSORS, 0), (TOPIC_ACTUATORS, 0), (TOPIC_PLAN, 0)])
 
 def on_message(client, userdata, msg):
+    global plan_instructions
+
     try:
+        topic = msg.topic
         payload = msg.payload.decode().strip()
-        print("MQTT Payload:", payload)
+        print(f"MQTT Payload from {topic}: {payload}")
 
-        if "temp=" in payload:
-            match = re.search(r"temp=([\d.]+),\s*humidity=([\d.]+)", payload)
-            if match:
-                sensor_state['temperature'] = float(match.group(1))
-                sensor_state['humidity'] = float(match.group(2))
+        data = json.loads(payload)  # Parse JSON data
 
-        elif "LDR raw=" in payload:
-            match = re.search(r"LDR raw=(\d+),\s*intensity=(\d+)", payload)
-            if match:
-                sensor_state['outside_light'] = int(match.group(1))
-                sensor_state['lighting_level'] = int(match.group(2))
+        # === SENSORS ===
+        if topic == TOPIC_SENSORS:
+            sensor_state['temperature'] = data.get("inside_temperature", sensor_state['temperature'])
+            sensor_state['humidity'] = data.get("inside_humidity", sensor_state['humidity'])
+            sensor_state['raw_light'] = data.get("raw_light", sensor_state['outside_light'])
+            sensor_state['ultrasonic'] = data.get("ultrasonic", sensor_state['ultrasonic'])
+            sensor_state['sound'] = data.get("sound", sensor_state['noise'])
 
-        elif payload.isdigit():
-            sensor_state['ultrasonic'] = int(payload)
+            # Optional: compute vacant seats based on ultrasonic
             val = sensor_state['ultrasonic']
-            sensor_state['vacant_seats'] = ( "1" if val > 200 else "0")
+            sensor_state['vacant_seats'] = "1" if val > 200 else "0"
 
-        # elif payload.isdigit():
-        #     sensor_state['noise'] = int(payload)
-        #     val = sensor_state['noise']
-        #     sensor_state['noise_level'] = (
-        #         "High" if val > 70 else "Moderate" if val > 50 else "Low"
-        #     )
+            # Optional: update mold risk if provided
+            if "mold_risk_level" in data:
+                sensor_state['mold_risk'] = data["mold_risk_level"]
+
+        # # === ACTUATORS ===
+        # if topic == TOPIC_ACTUATORS:
+        #     sensor_state['fan_speed'] = data.get("fan_speed", sensor_state['fan_speed'])
+        #     sensor_state['lighting_level'] = data.get("lighting_level", sensor_state['lighting_level'])
+        #
+        # # === PLAN ===
+        # if topic == TOPIC_PLAN:
+        #     # Expecting: {"plan": ["Switch off light", "Open door"]}
+        #     if isinstance(data, dict) and "plan" in data:
+        #         plan_instructions = data["plan"]
+
+    except json.JSONDecodeError:
+        print("Failed to decode JSON:", payload)
     except Exception as e:
         print("MQTT Error:", e)
 
@@ -228,13 +242,13 @@ def update_dashboard(n):
     now = datetime.datetime.now().strftime('%H:%M:%S')
     timestamps.append(now)
     temperature_data.append(sensor_state['temperature'])
-    noise_data.append(sensor_state['noise'])
+    noise_data.append(sensor_state['sound'])
 
     mold_index = round(sensor_state['humidity'] / 10, 1)
     mold_risk = "High" if mold_index > 7 else "Low"
     fan_status = "ON" if sensor_state['fan_speed'] > 0 else "OFF"
-    light_status = "ON" if sensor_state['lighting_level'] > 0 else "OFF"
-    noise_level = "High" if sensor_state['noise'] > 20 else "Low"
+    light_status = "ON" if sensor_state['raw_light'] > 0 else "OFF"
+    noise_level = "High" if sensor_state['sound'] > 20 else "Low"
 
     # Color-coded HTML components
     fan_status_div = html.Div([
@@ -281,7 +295,7 @@ def update_dashboard(n):
         f"Fan Speed: {sensor_state['fan_speed']}",
         f"Outside Light Intensity: {sensor_state['outside_light']}",
         light_status_div,
-        f"Indoor Lighting Level: {sensor_state['lighting_level']}",
+        f"Indoor Lighting Level: {sensor_state['raw_light']}",
         f"Humidity: {sensor_state['humidity']} %",
         f"Mold Index: {mold_index}",
         mold_risk_div,
