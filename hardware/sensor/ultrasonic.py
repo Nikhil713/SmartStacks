@@ -14,7 +14,7 @@ def read_ultrasonic():
     try:
         distance = grovepi.ultrasonicRead(ULTRASONIC_PORT)
         print(f"Ultrasonic Distance: {distance} cm")
-        mqtt_callback(f"[ULTRASONIC] Distance: {distance} cm")
+        # mqtt_callback(f"[ULTRASONIC] Distance: {distance} cm")
         return distance
     
     except IOError:
