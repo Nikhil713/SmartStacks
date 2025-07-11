@@ -13,16 +13,50 @@ from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 
 from software.weather_api import get_weather
+
+from software.mold_risk import check_mold_risk
+
+from mqtt.mqtt_client import mqtt_callback
 from logger import log
 
 import requests
 
 def get_sensor_data_and_create_problem_file():
+    print("Inside sensor data code")
+
+    # Light
     raw_light, intensity = read_ldr()
+    print("Inside sensor data code 1")
+    # Temp and Humidity
     temp, humidity = read_temperature()
+    print("Inside sensor data code 2")
+    # ultrasonic
     distance = read_ultrasonic()
+    print("Inside sensor data code 3")
+    # sound
     sound_value = get_random_sound_value()
+    print("Inside sensor data code 4")
+    # Temp/Humidity from weather api
     api_temp, api_humidity = get_weather()
+    print("Inside sensor data code 5")
+    # Mold risk - compound sensor
+    risk, mold_risk_level = 1,2
+    # risk, mold_risk_level = check_mold_risk(temp, humidity, api_temp, api_humidity)
+    print("Inside sensor data code 6")
+    
+    #Sensor data
+    sensor_data= {
+        'inside_temperature': temp,
+        'inside_humidity': humidity,
+        'raw_light': raw_light,
+        'ultrasonic': distance,
+        'sound': sound_value,
+        'outside_temperature': api_temp,
+        'outside_humidity': api_humidity,
+        'mold_risk_level': mold_risk_level
+    }
+    print("Going to send mqtt")
+    mqtt_callback(sensor_data, "smartstacks/sensors")
 
     if distance < 20:
         occupied = True
