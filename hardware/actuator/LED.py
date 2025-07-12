@@ -16,14 +16,18 @@ grovepi.pinMode(led_pin, "OUTPUT")
 def set_led(intensity):
     pwm = {0: 0, 1: 64, 2: 128, 3: 255}.get(intensity, 0)
 
-    try:
-        grovepi.analogWrite(led_pin, pwm)
-        return pwm
-    
-    # Turn LED off before stopping
-    except KeyboardInterrupt:	
-        grovepi.digitalWrite(led_pin,0)
+    # if pwm == last_pwm:
+    #     return  # No change needed
 
-    # Print "Error" if communication error encountered
-    except IOError:				
-        print ("Error")
+    try:
+        print("PWM:", pwm)
+        if pwm == 0:
+            grovepi.digitalWrite(led_pin, 0)
+        else:
+            grovepi.analogWrite(led_pin, pwm)
+
+    except KeyboardInterrupt:
+        grovepi.digitalWrite(led_pin, 0)
+
+    except IOError:
+        print("Error")

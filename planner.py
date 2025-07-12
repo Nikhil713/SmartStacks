@@ -27,23 +27,17 @@ def get_sensor_data_and_create_problem_file():
 
     # Light
     raw_light, intensity = read_ldr()
-    print("Inside sensor data code 1")
     # Temp and Humidity
-    temp, humidity = 27,65
-    print("Inside sensor data code 2")
+    temp, humidity = read_temperature()
     # ultrasonic
     distance = read_ultrasonic()
-    print("Inside sensor data code 3")
     # sound
     sound_value = get_random_sound_value()
-    print("Inside sensor data code 4")
     # Temp/Humidity from weather api
     api_temp, api_humidity = get_weather()
-    print("Inside sensor data code 5")
     # Mold risk - compound sensor
     # risk, mold_risk_level = 1,2
     risk, mold_risk_level = check_mold_risk(temp, humidity, api_temp, api_humidity)
-    print("Inside sensor data code 6")
     
     #Sensor data
     sensor_data= {
@@ -54,7 +48,7 @@ def get_sensor_data_and_create_problem_file():
         'sound': sound_value,
         'outside_temperature': api_temp,
         'outside_humidity': api_humidity,
-        'mold_risk_level': mold_risk_level
+        'mold_risk_level': risk
     }
     print("Going to send mqtt")
     mqtt_callback(sensor_data, "smartstacks/sensors")
@@ -225,19 +219,24 @@ def execute_plan(parsed_plan):
             # print(f"Executing action: {action_name}")
             execute_actions(action_name)
             mqtt_plan.append(action_name)
-    print(f"MQTT plan : {mqtt_plan}")
+    # print(f"MQTT plan : {mqtt_plan}")
+    mqtt_callback(mqtt_plan, "smartstacks/plan")
     
     
 
 def execute_actions(action_name):
     if action_name == "adjust-light-to-level-three":
-        pwm = set_led(3)
+        print(f"Executing action: {action_name}")
+        set_led(3)
     elif action_name == "adjust-light-to-level-two":
-        pwm = set_led(3)
-    elif action_name == "turn-on-light-to-level-one-very-dark" or "turn-on-light-to-level-one-dark" or "adjust-light-to-level-one":
-        pwm = set_led(3)
+        print(f"Executing action: {action_name}")
+        set_led(2)
+    elif action_name in ["turn-on-light-to-level-one-very-dark", "turn-on-light-to-level-one-dark", "adjust-light-to-level-one"]:
+        set_led(1)
+        print(f"Executing action: {action_name}")
     elif action_name == "turn-off-light":
-        pwm = set_led(0)
+        set_led(0)
+        print(f"Executing action: {action_name}")
 
     # elif action_name == "turn-on-fan":
     #     control_fan_based_on_temperature(force_on=True)
