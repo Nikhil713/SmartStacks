@@ -1,26 +1,25 @@
 (define (domain environment-control)
-  (:requirements :strips :typing)
+  (:requirements :strips :typing :fluents)
 
   (:types
     location
   )
 
   (:predicates
-    ;; Temperature states
-    (temp-very-low)
+    ;; Environmental categorization
+    (very-dark-light)
+    (dark-light)
+    (normal-light)
+    (bright-light)
+
+    ;; Temperature
     (temp-low)
     (temp-normal)
     (temp-high)
 
     ;; Humidity
-    (normal-humidity)
     (high-humidity)
-
-    ;; Light levels
-    (very-dark-light)
-    (dark-light)
-    (normal-light)
-    (bright-light)
+    (normal-humidity)
 
     ;; Sound levels
     (quiet)
@@ -28,23 +27,141 @@
     (loud)
 
     ;; Seat occupancy
-    (seat-empty)
     (seat-occupied)
+    (seat-empty)
 
-    ;; Derived/computed comfort states
+    ;; Derived/computed
+    (mold-risk-low-lighting)
+    (mold-risk-low-temph)
     (comfortable-lighting)
     (comfortable-temph)
-    (comfortable-noise-level)
-    (no-light)
 
-    ;; Goals
+    (mold-risk-small)
+    (mold-risk-medium)
+    (mold-risk-high)
+
+    (comfortable-noise-level)
     (mold-risk-low)
-    (mold-risk-low-lighting) 
-    (mold-risk-low-temph)
     (comfortable)
+
   )
 
- ;; Light control
+  (:functions
+    (temperature ?r - location)
+    (humidity ?r - location)
+    (light-level ?r - location)
+    (sound-level ?r - location)
+    (mold-risk ?r - location)
+    (ultrasonic-distance ?r - location)
+
+  )
+
+  ;; Light classification
+  (:action classify-very-dark
+    :parameters (?r - location)
+    :precondition (< (light-level ?r) 200)
+    :effect (very-dark-light)
+  )
+
+  (:action classify-dark
+    :parameters (?r - location)
+    :precondition (and (>= (light-level ?r) 200) (< (light-level ?r) 500))
+    :effect (dark-light)
+  )
+
+  (:action classify-normal-light
+    :parameters (?r - location)
+    :precondition (and (>= (light-level ?r) 500) (< (light-level ?r) 800))
+    :effect (normal-light)
+  )
+
+  (:action classify-bright
+    :parameters (?r - location)
+    :precondition (>= (light-level ?r) 800)
+    :effect (bright-light)
+  )
+
+  ;; Temperature classification
+  (:action classify-temp-low
+    :parameters (?r - location)
+    :precondition (< (temperature ?r) 18)
+    :effect (temp-low)
+  )
+
+  (:action classify-temp-normal
+    :parameters (?r - location)
+    :precondition (and (>= (temperature ?r) 18) (<= (temperature ?r) 26))
+    :effect (temp-normal)
+  )
+
+  (:action classify-temp-high
+    :parameters (?r - location)
+    :precondition (> (temperature ?r) 26)
+    :effect (temp-high)
+  )
+
+  ;; Humidity classification
+  (:action classify-humidity-high
+    :parameters (?r - location)
+    :precondition (> (humidity ?r) 60)
+    :effect (high-humidity)
+  )
+
+  (:action classify-humidity-normal
+    :parameters (?r - location)
+    :precondition (<= (humidity ?r) 60)
+    :effect (normal-humidity)
+  )
+
+  (:action classify-mold-risk-small
+    :parameters (?r - location)
+    :precondition (= (mold-risk ?r) 1)
+    :effect (mold-risk-small)
+  )
+  (:action classify-mold-risk-medium
+    :parameters (?r - location)
+    :precondition (= (mold-risk ?r) 2)
+    :effect (mold-risk-medium)
+  )
+  (:action classify-mold-risk-high
+    :parameters (?r - location)
+    :precondition (= (mold-risk ?r) 3)
+    :effect (mold-risk-high)
+  )
+
+  ;; Sound level classification
+  (:action classify-sound-quiet
+    :parameters (?r - location)
+    :precondition (< (sound-level ?r) 40)
+    :effect (quiet)
+  )
+
+  (:action classify-sound-normal
+    :parameters (?r - location)
+    :precondition (and (>= (sound-level ?r) 40) (<= (sound-level ?r) 70))
+    :effect (normal)
+  )
+
+  (:action classify-sound-loud
+    :parameters (?r - location)
+    :precondition (> (sound-level ?r) 70)
+    :effect (loud)
+  )
+
+  ;;occupancy classification
+
+  (:action classify-seat-vacant
+    :parameters (?r - location)
+    :precondition (> (ultrasonic-distance ?r) 20)
+    :effect (seat-empty)
+  )
+
+  (:action classify-seat-occupied
+    :parameters (?r - location)
+    :precondition (<= (ultrasonic-distance ?r) 20)
+    :effect (seat-occupied)
+  )
+  ;; Light control
   (:action turn-on-light-to-level-one-very-dark
     :precondition (and (very-dark-light) (seat-empty))
     :effect (and (mold-risk-low-lighting))
@@ -75,9 +192,8 @@
     :effect (and (comfortable-lighting)(mold-risk-low-lighting))
   )
 
-
   ;; Fan control (extend as needed)
-  
+
   (:action turn-off-fan
     :precondition (and (temp-low))
     :effect (and (temp-normal))
@@ -100,16 +216,16 @@
 
   ;; Noise alert
   (:action nothing-to-do-for-quiet-sound
-  :precondition (and (quiet))
-  :effect (comfortable-noise-level)  ;; Placeholder effect
+    :precondition (and (quiet))
+    :effect (comfortable-noise-level) ;; Placeholder effect
   )
   (:action nothing-to-do-for-normal-sound
-  :precondition (and (normal))
-  :effect (comfortable-noise-level)  ;; Placeholder effect
+    :precondition (and (normal))
+    :effect (comfortable-noise-level) ;; Placeholder effect
   )
   (:action alert-in-lcd-for-noise-level
     :precondition (and (loud))
-    :effect (comfortable-noise-level)  ;; Placeholder effect
+    :effect (comfortable-noise-level) ;; Placeholder effect
   )
 
   ;; LCD display
@@ -122,5 +238,5 @@
     :precondition (and (mold-risk-low-lighting) (mold-risk-low-temph))
     :effect (and (mold-risk-low))
   )
-  
+
 )

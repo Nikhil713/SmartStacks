@@ -18,28 +18,32 @@ def plan():
         problem.save(problem_path)
 
         cmd = [
-            './fast-downward.py',
-            domain_path,
-            problem_path,
-            '--search', 'lazy_greedy([ff()], preferred=[ff()])'
+            './ff',           # your Metric-FF binary
+            '-o', domain_path,
+            '-f', problem_path,
+            '-s', '0'  # standard FF search: EHC+H then BFS without cost optimization
         ]
 
         try:
-            result = subprocess.run(cmd, cwd='/home/pi/downward',
+            # Set cwd to where your ff binary is located if needed
+            result = subprocess.run(cmd, cwd='/home/pi/Metric-FF-v2.1',
                                     capture_output=True, text=True, timeout=30)
             output = result.stdout
             print("Planner Output:\n\n", output, "\n\n")
 
-            if 'Solution found' in output:
-                # Extract actual plan lines from output
+            if 'found legal plan' in output.lower() or 'found plan' in output.lower():
+                # Extract plan lines, usually the lines after "found legal plan"
                 plan = []
+                recording = False
                 for line in output.splitlines():
                     line = line.strip()
-                    if line and not line.startswith("[") and not line.startswith("INFO") and not line.startswith("search") and not line.startswith("translate") and not line.startswith("Parsing") and "exit code" not in line and "time" not in line and not line.startswith("Peak memory") and "memory" not in line:
-                        # this filters out logs and keeps only actual plan steps like: turn-on (1)
-                        if "Solution found!" not in line and "Solution found." not in line:
-                            plan.append(line)
-
+                    if 'found legal plan' in line.lower() or 'found plan' in line.lower():
+                        recording = True
+                        continue
+                    if recording:
+                        if line == '':
+                            break
+                        plan.append(line)
                 return jsonify({'plan': plan})
             else:
                 return jsonify({'plan': None, 'error': 'No plan found'})

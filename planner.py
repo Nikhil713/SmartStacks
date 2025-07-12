@@ -1,3 +1,4 @@
+import math
 import subprocess
 
 from hardware.sensor.LDR import read_ldr
@@ -28,7 +29,7 @@ def get_sensor_data_and_create_problem_file():
     raw_light, intensity = read_ldr()
     print("Inside sensor data code 1")
     # Temp and Humidity
-    temp, humidity = read_temperature()
+    temp, humidity = 27,65
     print("Inside sensor data code 2")
     # ultrasonic
     distance = read_ultrasonic()
@@ -57,53 +58,16 @@ def get_sensor_data_and_create_problem_file():
     }
     print("Going to send mqtt")
     mqtt_callback(sensor_data, "smartstacks/sensors")
-
-    if distance < 20:
-        occupied = True
-    else:
-        occupied = False
-    write_problem_pddl(temp, humidity, raw_light, sound_value, api_temp, api_humidity, occupied)
-
+    
+    if not (math.isnan(temp) or math.isnan(humidity)):
+        print("Going to send to planner")
+        print(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
+        write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
 
 
-def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occupied):
+
+def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance):
     filepath = 'ai_planning/problem.pddl'
-    facts = []
-
-    # Temperature classification
-    if temp <= 20:
-        facts.append("(temp-low)")
-    elif temp >= 30:
-        facts.append("(temp-high)")
-    else:
-        facts.append("(temp-normal)")
-
-    # Humidity
-    if humidity >= 60:
-        facts.append("(high-humidity)")
-    else:
-        facts.append("(normal-humidity)")
-
-    # Light
-    if light <= 200:
-        facts.append("(very-dark-light)")
-    elif light <= 500:
-        facts.append("(dark-light)")
-    elif light <= 800:
-        facts.append("(normal-light)")
-    else:
-        facts.append("(bright-light)")
-
-    # Sound
-    if sound <= 200:
-        facts.append("(quiet)")
-    elif sound <= 500:
-        facts.append("(normal)")
-    else:
-        facts.append("(loud)")
-
-    # Occupancy
-    facts.append("(seat-occupied)" if occupied else "(seat-empty)")
 
     goal = """
         (and
@@ -111,7 +75,7 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
             (comfortable-temph)
             (comfortable-noise-level)
         )
-    """ if occupied else """
+    """ if (distance <20) else """
         (and
             (mold-risk-low)
         )
@@ -119,21 +83,32 @@ def write_problem_pddl(temp, humidity, light, sound, api_temp, api_humidity, occ
 
     with open(filepath, 'w') as f:
         f.write(f"""
-    (define (problem smart-library)
-        (:domain environment-control)
-        (:objects
-            room - location
-        )
-        (:init
-            {' '.join(facts)}
-        )
-        (:goal
-            {goal}
-        )
+(define (problem smart-library)
+    (:domain environment-control)
+    (:objects
+        room - location
     )
-    """)
+    (:init
+        (= (temperature room) {temp})
+        (= (humidity room) {humidity})
+        (= (light-level room) {raw_light})
+        (= (sound-level room) {sound_value})
+        (= (mold-risk room) {mold_risk_level})
+        (= (ultrasonic-distance room) {distance})
+    )
+    (:goal
+        {goal}
+    )
+)
+""")
         
-    print("Facts written to problem.pddl:", facts)
+    print("Numeric values written to problem.pddl:")
+    print(f"  temperature: {temp}")
+    print(f"  humidity: {humidity}")
+    print(f"  light level: {raw_light}")
+    print(f"  sound level: {sound_value}")
+    print(f"  mold risk: {mold_risk_level}")
+    print(f"  distance: {distance}")
     print("Goal written to problem.pddl:", goal.strip())
 
 def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
@@ -202,10 +177,13 @@ def extract_plan_lines(planner_output):
             continue
         if any(kw in stripped for kw in ['cpu', 'wall-clock', 'mutex', 'axiom', 'proposition']):
             continue
-        if any(char.isdigit() for char in stripped) and '(' in stripped and ')' in stripped:
+
+        # Accept plan lines like "0: ACTION ARGS"
+        if stripped[0].isdigit() and ':' in stripped:
             plan_lines.append(line.strip())
 
     return plan_lines
+
 
 def parse_plan_response(plan_lines):
     parsed_plan = []
@@ -215,35 +193,49 @@ def parse_plan_response(plan_lines):
         if not line or line.startswith(";"):
             continue
 
-        # Remove numbering if present (e.g., "1: turn-on room")
+        # Remove step number prefix if present (e.g., "1: ACTION ARGS")
         if ':' in line:
             line = line.split(':', 1)[1].strip()
 
+        # Standardize case (optional — remove `.lower()` if you want case preserved)
+        line = line.lower()
+
+        # Parse action and arguments
         if '(' in line and ')' in line:
             action = line.split('(')[0].strip()
             args = line[line.find('(') + 1:line.find(')')].split()
         else:
             parts = line.split()
+            if not parts:
+                continue
             action = parts[0]
             args = parts[1:]
 
-        parsed_plan.append((action, args))
+        parsed_plan.append(action)
 
     return parsed_plan
 
 
+
 def execute_plan(parsed_plan):
-    for action_name, args in parsed_plan:
-        print(f"Executing action: {action_name}")
-        execute_actions(action_name)
+    proper_actions = ["adjust-light-to-level-three","adjust-light-to-level-two","adjust-light-to-level-one","turn-on-light-to-level-one-very-dark","turn-on-light-to-level-one-dark","turn-off-light","alert-in-lcd-for-noise-level"]
+    mqtt_plan = []
+    for action_name in parsed_plan:
+        if action_name in proper_actions:
+            # print(f"Executing action: {action_name}")
+            execute_actions(action_name)
+            mqtt_plan.append(action_name)
+    print(f"MQTT plan : {mqtt_plan}")
+    
+    
 
 def execute_actions(action_name):
     if action_name == "adjust-light-to-level-three":
         pwm = set_led(3)
     elif action_name == "adjust-light-to-level-two":
-        pwm = set_led(2)
+        pwm = set_led(3)
     elif action_name == "turn-on-light-to-level-one-very-dark" or "turn-on-light-to-level-one-dark" or "adjust-light-to-level-one":
-        pwm = set_led(1)
+        pwm = set_led(3)
     elif action_name == "turn-off-light":
         pwm = set_led(0)
 
@@ -257,7 +249,7 @@ def execute_actions(action_name):
     #     message = " ".join(args)
     #     display_message(message)
 
-    # elif action_name == "alert-noise":
+    # elif action_name == "alert-in-lcd-for-noise-level":
     #     display_message("Too loud!")
 
     # Extend with more actions
