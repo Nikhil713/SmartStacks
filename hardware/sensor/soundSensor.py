@@ -13,7 +13,7 @@ def get_random_sound_value():
     try:
         sensor_value = random.randint(0, 300)
         print(sensor_value)
-        mqtt_callback(f"[Sound] Raw: {sensor_value}")
+        # mqtt_callback(f"[Sound] Raw: {sensor_value}")
 
         return sensor_value
     

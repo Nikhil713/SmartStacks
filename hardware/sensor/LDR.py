@@ -21,7 +21,7 @@ def read_ldr():
         else:
             intensity = 0
 
-        mqtt_callback(f"[LDR] Raw: {value}, Intensity: {intensity}")
+        # mqtt_callback(f"[LDR] Raw: {value}, Intensity: {intensity}")
 
         return value, intensity
     
