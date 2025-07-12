@@ -1,7 +1,6 @@
 # mold_risk.py
 
 import math
-from mqtt.mqtt_client import mqtt_callback
 import csv
 import os
 from datetime import datetime
@@ -21,14 +20,13 @@ def dew_point(temp_c, rh):
 def check_mold_risk(int_temp, int_rh, ext_temp, ext_rh):
     int_dp = dew_point(int_temp, int_rh)
     ext_dp = dew_point(ext_temp, ext_rh)
-
-    conditions = {
+    mold_risk_level = {
         "High Humidity (RH > 60%)": int_rh > 60,
         "Dew Point Gap (Indoor DP - Outdoor DP > 3°C)": (int_dp - ext_dp) > 3,
         "Condensation Risk (Indoor Temp ≤ DP)": int_temp <= int_dp
     }
 
-    passed = sum(conditions.values())
+    passed = sum(mold_risk_level.values())
 
     if passed == 3:
         risk = "HIGH"
@@ -37,9 +35,8 @@ def check_mold_risk(int_temp, int_rh, ext_temp, ext_rh):
     else:
         risk = "LOW"
 
-    mqtt_callback(f"[Mold Risk] Level: {risk}")
-
-    return risk, int_dp, ext_dp, conditions
+    # mqtt_callback(f"[Mold Risk] Level: {risk}")
+    return risk, passed
 
 
 # -------- CSV Logger --------
