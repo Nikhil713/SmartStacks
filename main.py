@@ -6,6 +6,7 @@ import planner as planner
 import sys
 # from hardware.actuator.fan import set_fan_speed
 from hardware.actuator.LED import set_led
+from hardware.actuator.LCD_Display import *
 #import schedule
 
 # Create a shared stop signal
@@ -53,5 +54,7 @@ if __name__ == '__main__':
         # p2.join()
         # p3.join()
         # set_fan_speed(0)  # Turn off fan on exit
+        setRGB(0, 0, 0)
+        setText("")
         set_led(0)
         sys.exit(0)

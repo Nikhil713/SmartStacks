@@ -123,28 +123,6 @@ def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
         print("Error sending PDDL files:", e)
         return []
 
-    # CMD way
-    # cmd = [
-    #     './fast-downward.py',
-    #     domain,
-    #     problem,
-    #     '--search', 'lazy_greedy([ff()], preferred=[ff()])'
-    # ]
-
-    # try:
-    #     result = subprocess.run(cmd, cwd='/home/pi/downward',
-    #                             capture_output=True, text=True, timeout=30)
-    #     output = result.stdout
-    #     print("Planner Output:\n", output)
-
-    #     if 'Solution found' in output:
-    #         return output
-    #     else:
-    #         return None
-    # except Exception as e:
-    #     print(f"Error running planner: {e}")
-    #     return None
-
 def extract_plan_lines(planner_output):
     plan_lines = []
 
@@ -288,8 +266,6 @@ def execute_actions(action_name):
     elif action_name == "send-alert-for-mold-risk-high":
         print(f"Executing action: {action_name}")
         #send email here
-
-    # Extend with more actions
     else:
         print(f"Unknown action: {action_name}")
     
