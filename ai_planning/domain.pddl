@@ -16,6 +16,9 @@
     (temp-low)
     (temp-normal)
     (temp-high)
+    (temp-very-high)
+    (temp-max)
+    
 
     ;; Humidity
     (high-humidity)
@@ -34,15 +37,21 @@
     (mold-risk-low-lighting)
     (mold-risk-low-temph)
     (comfortable-lighting)
+    (comfortable-temp)
     (comfortable-temph)
 
-    (mold-risk-small)
-    (mold-risk-medium)
-    (mold-risk-high)
+    (mold-risk-index-small)
+    (mold-risk-index-medium)
+    (mold-risk-index-high)
+    (mold-risk-index-ok)
+    (mold-risk-low-sound)
 
     (comfortable-noise-level)
     (mold-risk-low)
     (comfortable)
+
+    
+    (ideal-env)
 
   )
 
@@ -71,13 +80,13 @@
 
   (:action classify-normal-light
     :parameters (?r - location)
-    :precondition (and (>= (light-level ?r) 500) (< (light-level ?r) 800))
+    :precondition (and (>= (light-level ?r) 500) (< (light-level ?r) 699))
     :effect (normal-light)
   )
 
   (:action classify-bright
     :parameters (?r - location)
-    :precondition (>= (light-level ?r) 800)
+    :precondition (>= (light-level ?r) 700)
     :effect (bright-light)
   )
 
@@ -93,11 +102,23 @@
     :precondition (and (>= (temperature ?r) 18) (<= (temperature ?r) 26))
     :effect (temp-normal)
   )
-
+  
   (:action classify-temp-high
     :parameters (?r - location)
-    :precondition (> (temperature ?r) 26)
+    :precondition (and (> (temperature ?r) 26) (<= (temperature ?r) 28))
     :effect (temp-high)
+  )  
+  
+  (:action classify-temp-very-high
+    :parameters (?r - location)
+    :precondition (and (> (temperature ?r) 28) (<= (temperature ?r) 30))
+    :effect (temp-very-high)
+  )
+
+  (:action classify-temp-max
+    :parameters (?r - location)
+    :precondition (> (temperature ?r) 30)
+    :effect (temp-max)
   )
 
   ;; Humidity classification
@@ -116,17 +137,17 @@
   (:action classify-mold-risk-small
     :parameters (?r - location)
     :precondition (= (mold-risk ?r) 1)
-    :effect (mold-risk-small)
+    :effect (mold-risk-index-ok)
   )
   (:action classify-mold-risk-medium
     :parameters (?r - location)
     :precondition (= (mold-risk ?r) 2)
-    :effect (mold-risk-medium)
+    :effect (mold-risk-index-ok)
   )
   (:action classify-mold-risk-high
     :parameters (?r - location)
     :precondition (= (mold-risk ?r) 3)
-    :effect (mold-risk-high)
+    :effect (mold-risk-index-high)
   )
 
   ;; Sound level classification
@@ -150,13 +171,13 @@
 
   ;;occupancy classification
 
-  (:action classify-seat-vacant
+  (:action display-seat-vacant
     :parameters (?r - location)
     :precondition (> (ultrasonic-distance ?r) 20)
     :effect (seat-empty)
   )
 
-  (:action classify-seat-occupied
+  (:action display-seat-occupied
     :parameters (?r - location)
     :precondition (<= (ultrasonic-distance ?r) 20)
     :effect (seat-occupied)
@@ -192,19 +213,43 @@
     :effect (and (comfortable-lighting)(mold-risk-low-lighting))
   )
 
-  ;; Fan control (extend as needed)
+  ;; Fan control
 
   (:action turn-off-fan
     :precondition (and (temp-low))
-    :effect (and (temp-normal))
+    :effect (and (comfortable-temp))
   )
 
-  (:action adjust-fan-to-reduce-temp
+  (:action nothing-to-do-for-normal-temp
+    :precondition (and (temp-normal))
+    :effect (comfortable-temp)
+  )
+
+  (:action nothing-to-do-for-high-temp-empty-seat
+    :precondition (and (temp-normal))
+    :effect (comfortable-temp)
+  )
+
+  (:action turn-on-fan-to-level-one
     :precondition (and (temp-high) (seat-occupied))
     :effect (and (temp-normal))
   )
 
-  (:action adjust-fan-to-reduce-humidity
+  (:action turn-on-fan-to-level-two
+    :precondition (and (temp-very-high) (seat-occupied))
+    :effect (and (temp-normal))
+  )
+
+  (:action turn-on-fan-to-level-three
+    :precondition (and (temp-max) (seat-occupied))
+    :effect (and (temp-normal))
+  )
+
+  (:action nothing-to-do-for-normal-humidity
+    :precondition (and (normal-humidity))
+    :effect (and (mold-risk-low-temph))
+  )
+  (:action turn-on-fan-to-reduce-humidity
     :precondition (and (high-humidity))
     :effect (and (normal-humidity)(mold-risk-low-temph))
   )
@@ -215,28 +260,43 @@
   )
 
   ;; Noise alert
-  (:action nothing-to-do-for-quiet-sound
+  (:action display-quiet-in-lcd-display
     :precondition (and (quiet))
-    :effect (comfortable-noise-level) ;; Placeholder effect
-  )
-  (:action nothing-to-do-for-normal-sound
-    :precondition (and (normal))
-    :effect (comfortable-noise-level) ;; Placeholder effect
-  )
-  (:action alert-in-lcd-for-noise-level
-    :precondition (and (loud))
-    :effect (comfortable-noise-level) ;; Placeholder effect
+    :effect (comfortable-noise-level)
   )
 
-  ;; LCD display
-  (:action display-message
-    :precondition (and (seat-occupied))
-    :effect (comfortable)
+  (:action display-normal-in-lcd-display
+    :precondition (and (normal))
+    :effect (comfortable-noise-level)
+  )
+  
+  (:action display-loud-in-lcd-display
+    :precondition (and (loud))
+    :effect (comfortable-noise-level)
+  )
+
+  (:action turn-off-lcd-display
+    :precondition (and (seat-empty))
+    :effect (mold-risk-low-sound)
+  )
+
+  (:action send-email-for-high-mold-index
+    :precondition (and (mold-risk-index-high))
+    :effect (mold-risk-index-ok)
   )
 
   (:action environment-is-mold-risk-low
-    :precondition (and (mold-risk-low-lighting) (mold-risk-low-temph))
+    :precondition (and (mold-risk-low-lighting) (mold-risk-low-temph)(mold-risk-low-sound)(mold-risk-index-ok))
     :effect (and (mold-risk-low))
   )
 
+  (:action ideal-env-unoccupied
+    :precondition (and (mold-risk-low) (seat-empty))
+    :effect (and (ideal-env))
+  )
+
+  (:action ideal-env-occupied
+    :precondition (and (comfortable-lighting) (comfortable-temph) (comfortable-noise-level)(seat-occupied)(mold-risk-index-ok))
+    :effect (and (ideal-env))
+  )
 )

@@ -16,6 +16,7 @@ from hardware.sensor.ultrasonic import read_ultrasonic
 from software.weather_api import get_weather
 
 from software.mold_risk import check_mold_risk
+from hardware.actuator.LCD_Display import *
 
 from mqtt.mqtt_client import mqtt_callback
 from logger import log
@@ -63,18 +64,6 @@ def get_sensor_data_and_create_problem_file():
 def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance):
     filepath = 'ai_planning/problem.pddl'
 
-    goal = """
-        (and
-            (comfortable-lighting)
-            (comfortable-temph)
-            (comfortable-noise-level)
-        )
-    """ if (distance <20) else """
-        (and
-            (mold-risk-low)
-        )
-    """
-
     with open(filepath, 'w') as f:
         f.write(f"""
 (define (problem smart-library)
@@ -91,7 +80,9 @@ def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, 
         (= (ultrasonic-distance room) {distance})
     )
     (:goal
-        {goal}
+        (and
+            (ideal-env)
+        )
     )
 )
 """)
@@ -103,7 +94,6 @@ def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, 
     print(f"  sound level: {sound_value}")
     print(f"  mold risk: {mold_risk_level}")
     print(f"  distance: {distance}")
-    print("Goal written to problem.pddl:", goal.strip())
 
 def send_pddl_files_and_get_plan(domain_file_path, problem_file_path):
     server_url='http://127.0.0.1:5000/plan'
@@ -212,7 +202,24 @@ def parse_plan_response(plan_lines):
 
 
 def execute_plan(parsed_plan):
-    proper_actions = ["adjust-light-to-level-three","adjust-light-to-level-two","adjust-light-to-level-one","turn-on-light-to-level-one-very-dark","turn-on-light-to-level-one-dark","turn-off-light","alert-in-lcd-for-noise-level"]
+    proper_actions = ["adjust-light-to-level-three",
+                      "adjust-light-to-level-two",
+                      "adjust-light-to-level-one",
+                      "turn-on-light-to-level-one-very-dark",
+                      "turn-on-light-to-level-one-dark",
+                      "turn-off-light",
+                      "turn-on-fan-to-level-three",
+                      "turn-on-fan-to-level-two",
+                      "turn-on-fan-to-level-one",
+                      "turn-on-fan-to-reduce-humidity",
+                      "turn-off-fan",
+                      "display-quiet-in-lcd-display",
+                      "display-normal-in-lcd-display",
+                      "display-loud-in-lcd-display",
+                      "turn-off-lcd-display",
+                      "display-seat-occupied",
+                      "send-email-for-high-mold-index"
+                      ]
     mqtt_plan = []
     for action_name in parsed_plan:
         if action_name in proper_actions:
@@ -238,25 +245,55 @@ def execute_actions(action_name):
         set_led(0)
         print(f"Executing action: {action_name}")
 
-    # elif action_name == "turn-on-fan":
-    #     control_fan_based_on_temperature(force_on=True)
+    elif action_name == "turn-on-fan-to-level-three":
+        print(f"Executing action: {action_name}")
+        # set_fan_speed(3)
+    elif action_name == "turn-on-fan-to-level-two":
+        print(f"Executing action: {action_name}")
+        # set_fan_speed(2)
+    elif action_name == "turn-on-fan-to-level-one":
+        print(f"Executing action: {action_name}")
+        # set_fan_speed(1)
+    elif action_name == "turn-on-fan-to-reduce-humidity":
+        # set_fan_speed(3)
+        print(f"Executing action: {action_name}")
+    elif action_name == "turn-off-fan":
+        print(f"Executing action: {action_name}")
+        # set_fan_speed(0)
 
-    # elif action_name == "turn-off-fan":
-    #     control_fan_based_on_temperature(force_on=False)
-
-    # elif action_name == "display-message":
-    #     message = " ".join(args)
-    #     display_message(message)
-
-    # elif action_name == "alert-in-lcd-for-noise-level":
-    #     display_message("Too loud!")
+    elif action_name == "display-quiet-in-lcd-display":
+        print(f"Executing action: {action_name}")
+        setRGB(0,255,0)
+        level = "Quiet"
+        setText(level)
+    elif action_name == "display-normal-in-lcd-display":
+        print(f"Executing action: {action_name}")
+        setRGB(125,125,125)
+        level = "Normal"
+        setText(level)
+    elif action_name == "display-loud-in-lcd-display":
+        print(f"Executing action: {action_name}")
+        setRGB(255,0,0)
+        level = "Loud"
+        setText(level)
+    elif action_name == "turn-off-lcd-display":
+        print(f"Executing action: {action_name}")
+        setRGB(0, 0, 0)
+        setText("")
+        
+    elif action_name == "display-seat-occupied":
+        print(f"Executing action: {action_name}")
+        #send notification
+        
+    elif action_name == "send-alert-for-mold-risk-high":
+        print(f"Executing action: {action_name}")
+        #send email here
 
     # Extend with more actions
     else:
         print(f"Unknown action: {action_name}")
     
-    
-
+    # Also handle how to send actutator status to MQTT broker
     
 
 def run_planner():
