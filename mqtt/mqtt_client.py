@@ -42,9 +42,26 @@ CLIENT_ID = "raspberrypi_sensor_01"    # unique identifier
 mqtt_client = mqtt.Client(client_id=CLIENT_ID)
 mqtt_client.connect(BROKER, PORT, 60)
 
+log_file_path = "/path/to/error.log"
+
 def mqtt_callback(data, TOPIC):
 
       payload = json.dumps(data)
       mqtt_client.publish(TOPIC, payload)
       print(f"Published → {payload}")
       time.sleep(5)
+
+
+def follow(file):
+    file.seek(0, 2)  # Move to end of file
+    while True:
+        line = file.readline()
+        if not line:
+            time.sleep(0.5)
+            continue
+        yield line
+
+with open(log_file_path, "r") as logfile:
+    loglines = follow(logfile)
+    for line in loglines:
+        mqtt_client.publish("smartstacks/log", line.strip())
