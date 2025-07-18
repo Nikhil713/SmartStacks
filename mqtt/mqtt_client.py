@@ -52,16 +52,16 @@ def mqtt_callback(data, TOPIC):
       time.sleep(5)
 
 
-def follow(file):
-    file.seek(0, 2)  # Move to end of file
-    while True:
-        line = file.readline()
-        if not line:
-            time.sleep(0.5)
-            continue
-        yield line
+# def follow(file):
+#     file.seek(0, 2)  # Move to end of file
+#     while True:
+#         line = file.readline()
+#         if not line:
+#             time.sleep(0.5)
+#             continue
+#         yield line
 
-with open(log_file_path, "r") as logfile:
-    loglines = follow(logfile)
-    for line in loglines:
-        mqtt_client.publish("smartstacks/log", line.strip())
+# with open(log_file_path, "r") as logfile:
+#     loglines = follow(logfile)
+#     for line in loglines:
+#         mqtt_client.publish("smartstacks/log", line.strip())
