@@ -36,6 +36,10 @@ def init_sensor_state():
         'outside_temperature' : 30.0,
         'outside_humidity' : 55.0,
         'mold_risk_level': 'LOW'
+        # 'mold_index' : 8
+        # 'vacant_seats': 1,
+        # 'noise_level': 'High',
+        #'mold_risk_level' : 0
     }
 def init_actuator_state():
     return {
@@ -76,10 +80,10 @@ def on_message(client, userdata, msg):
         # === SENSORS ===
         if topic == TOPIC_SENSORS:
             sensor_state['inside_temperature'] = data.get("inside_temperature", sensor_state['inside_temperature'])
-            sensor_state['inside_humidity'] = data.get("inside_humidity", sensor_state['humidity'])
+            sensor_state['inside_humidity'] = data.get("inside_humidity", sensor_state['inside_humidity'])
             sensor_state['raw_light'] = data.get("raw_light", sensor_state['raw_light'])
             sensor_state['ultrasonic'] = data.get("ultrasonic", sensor_state['ultrasonic'])
-            sensor_state['sound'] = data.get("sound", sensor_state['noise'])
+            sensor_state['sound'] = data.get("sound", sensor_state['sound'])
             sensor_state['outside_temperature'] = round(data.get("outside_temperature", sensor_state['outside_temperature']),2)
             sensor_state['outside_humidity'] = data.get("outside_humidity", sensor_state['outside_humidity'])
             sensor_state['mold_risk_level'] = data.get("mold_risk_level", sensor_state['mold_risk_level'])
@@ -89,7 +93,13 @@ def on_message(client, userdata, msg):
             actuator_state['fan_speed'] = data.get("fan_speed", actuator_state['fan_speed'])
             actuator_state['lighting_level'] = data.get("lighting_level", actuator_state['lighting_level'])
             actuator_state['vacant_seats'] = data.get("vacant_seats", actuator_state['vacant_seats'])
+            # actuator_state['mold_risk_level'] = data.get("mold_risk_level", actuator_state['mold_risk_level'])
 
+        # # === PLAN ===
+        # if topic == TOPIC_PLAN:
+        #     # Expecting: {"plan": ["Switch off light", "Open door"]}
+        #     if isinstance(data, dict) and "plan" in data:
+        #         plan_instructions = data["plan"]
         # === PLAN ===
         if topic == TOPIC_PLAN:
             # Expecting a simple list: ["Switch off light", "Open door"]
@@ -127,9 +137,23 @@ def labeled_box(icon_url, content_id):
         'width' : '100%',
         'alignItems': 'center',
         'justifyContent': 'center',
+        # 'border': '1px solid #ccc',
+        # 'padding': '15px 20px',
+        # 'margin': '10px',
+        # 'width': '30%',
         'height': '100px',
+        # 'borderRadius': '15px',
+        # 'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
+        # 'backgroundColor': '#ffffff'
     })
 
+# def make_row(children):
+#     return html.Div(children, style={
+#         'display': 'flex',
+#         'justifyContent': 'space-around',
+#         'flexWrap': 'wrap',
+#         'marginBottom': '20px'
+#     })
 
 def battery_indicator(label, level, max_level=3, color="#4CAF50"):
     filled_percent = (level / max_level) * 100
@@ -306,6 +330,7 @@ app.layout = html.Div([
      Output('fan-speed-display', 'children'),
      Output('indoor-light-status-display', 'children'),
      Output('seats-display', 'children'),
+     # Output('mold-index-display', 'children'),
      Output('mold-risk-display', 'children'),
      Output('temp-graph', 'figure'),
      Output('plan-display', 'children')],
@@ -319,10 +344,44 @@ def update_dashboard(n):
     temperature_data.append(sensor_state['inside_temperature'])
     noise_data.append(sensor_state['sound'])
 
+    # mold_risk_level = "High" if actuator_state['mold_risk_level'] > 7 else "Low"
+    # fan_status = "ON" if actuator_state['fan_speed'] > 0 else "OFF"
+    # light_status = "ON" if sensor_state['raw_light'] > 0 else "OFF"
+    # noise_level = "High" if sensor_state['sound'] > 20 else "Low"
+
     fan_speed_div = battery_indicator("Fan Speed", actuator_state['fan_speed'], max_level=3, color="#4caf50")
 
     indoor_light_div = battery_indicator("Indoor Light", actuator_state['led_level'], max_level=3,
                                          color="#ffc107")
+
+    # Color-coded HTML components
+    # fan_status_div = html.Div([
+    #     html.Span("Fan Status: ", style={'color': 'black'}),
+    #     html.Span("ON" if fan_status else "OFF", style={
+    #         'color': '#009900' if fan_status else '#e74c3c'
+    #     })
+    # ], style={'textAlign': 'center'})
+
+    # mold_risk_div = html.Div([
+    #     html.Span("Risk of Mold: ", style={'color': 'black'}),
+    #     html.Span(mold_risk, style={
+    #         'color': '#e74c3c' if mold_risk == 'High' else '#009900'
+    #     })
+    # ], style={'textAlign': 'center'})
+
+    # light_status_div = html.Div([
+    #     html.Span("Indoor Light: ", style={'color': 'black'}),
+    #     html.Span("ON" if light_status else "OFF", style={
+    #         'color': '#009900' if light_status else '#e74c3c'
+    #     })
+    # ], style={'textAlign': 'center'})
+    #
+    # noise_level_div = html.Div([
+    #     html.Span("Noise Level: ", style={'color': 'black'}),
+    #     html.Span("High" if noise_level else "Low", style={
+    #         'color': '#009900' if noise_level else '#e74c3c'
+    #     })
+    # ], style={'textAlign': 'center'})
 
     temp_fig = go.Figure(go.Scatter(x=list(timestamps), y=list(temperature_data), mode='lines+markers'))
     temp_fig.update_layout(title='Temperature Over Time', xaxis_title='Time', yaxis_title='°C',
@@ -340,11 +399,15 @@ def update_dashboard(n):
         f"Lighting Intensity: {sensor_state['raw_light']}",
         f"Temperature: {sensor_state['outside_temperature']} °C",
         f"Humidity: {sensor_state['outside_humidity']} %",
+        #f"Fan Speed: {actuator_state['fan_speed']}",
         f"Noise Level: {actuator_state['noise_level']}",
         fan_speed_div,
         indoor_light_div,
         f"Vacant Seats: {actuator_state['vacant_seats']}",
+        # f"Mold Index: {sensor_state['mold_index']}",
         f"Mold Risk: {sensor_state['mold_risk_level']}",
+        # f"Mold Risk: {mold_risk_level}",
+        #noise_level_div,
         temp_fig,
         plan_html
     )
