@@ -136,36 +136,36 @@
 
   (:action classify-mold-risk-small
     :parameters (?r - location)
-    :precondition (= (mold-risk ?r) 1)
+    :precondition (= (mold-risk ?r) 0)
     :effect (mold-risk-index-ok)
   )
   (:action classify-mold-risk-medium
     :parameters (?r - location)
-    :precondition (= (mold-risk ?r) 2)
+    :precondition (= (mold-risk ?r) 1)
     :effect (mold-risk-index-ok)
   )
   (:action classify-mold-risk-high
     :parameters (?r - location)
-    :precondition (= (mold-risk ?r) 3)
+    :precondition (and (> (mold-risk ?r) 1) (<= (mold-risk ?r) 3))
     :effect (mold-risk-index-high)
   )
 
   ;; Sound level classification
   (:action classify-sound-quiet
     :parameters (?r - location)
-    :precondition (< (sound-level ?r) 40)
+    :precondition (< (sound-level ?r) 100)
     :effect (quiet)
   )
 
   (:action classify-sound-normal
     :parameters (?r - location)
-    :precondition (and (>= (sound-level ?r) 40) (<= (sound-level ?r) 70))
+    :precondition (and (>= (sound-level ?r) 100) (<= (sound-level ?r) 250))
     :effect (normal)
   )
 
   (:action classify-sound-loud
     :parameters (?r - location)
-    :precondition (> (sound-level ?r) 70)
+    :precondition (> (sound-level ?r) 251)
     :effect (loud)
   )
 
