@@ -10,6 +10,7 @@ import re
 import json
 
 # Constants
+
 MAX_LENGTH = 50
 MQTT_BROKER = "test.mosquitto.org"
 TOPIC_SENSORS = "smartstacks/sensors"
@@ -44,24 +45,22 @@ def init_sensor_state():
 def init_actuator_state():
     return {
         'vacant_seats': 1,
-        'noise_level': 'High',
         'fan_speed': 2,
-        'led_level' : 3
+        'light_level' : 3,
+        "sound_level": "Off"
     }
 
 
 sensor_state = init_sensor_state()
 actuator_state = init_actuator_state()
 
-bg_colour_mold = '#ffffff'
-#define bg colour
-if sensor_state['mold_risk_level'] == 'HIGH':
-    bg_colour_mold = '#FF9793'
-elif sensor_state['mold_risk_level'] == 'MEDIUM':
-    bg_colour_mold = '#FFFFC5'
-elif sensor_state['mold_risk_level'] == 'LOW':
-    bg_colour_mold = '#e6ffe6'
-
+# def bgcolour():
+#     if sensor_state['mold_risk_level'] == 'HIGH':
+#         return '#FF9793'
+#     elif sensor_state['mold_risk_level'] == 'MEDIUM':
+#         return '#FFFFC5'
+#     elif sensor_state['mold_risk_level'] == 'LOW':
+#         return '#e6ffe6'
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with result code", rc)
@@ -73,7 +72,7 @@ def on_message(client, userdata, msg):
     try:
         topic = msg.topic
         payload = msg.payload.decode().strip()
-        print(f"MQTT Payload from {topic}: {payload}")
+        # print(f"MQTT Payload from {topic}: {payload}")
 
         data = json.loads(payload)  # Parse JSON data
 
@@ -88,19 +87,17 @@ def on_message(client, userdata, msg):
             sensor_state['outside_humidity'] = data.get("outside_humidity", sensor_state['outside_humidity'])
             sensor_state['mold_risk_level'] = data.get("mold_risk_level", sensor_state['mold_risk_level'])
 
+
         # === ACTUATORS ===
         if topic == TOPIC_ACTUATORS:
             actuator_state['fan_speed'] = data.get("fan_speed", actuator_state['fan_speed'])
-            actuator_state['lighting_level'] = data.get("lighting_level", actuator_state['lighting_level'])
+            actuator_state['light_level'] = data.get("light_level", actuator_state['light_level'])
             actuator_state['vacant_seats'] = data.get("vacant_seats", actuator_state['vacant_seats'])
+            actuator_state['sound_level'] = data.get("sound_level", actuator_state['sound_level'])
             # actuator_state['vacant_seats'] = 1 if sensor_state['ultrasonic']> 50 else 0
             # actuator_state['mold_risk_level'] = data.get("mold_risk_level", actuator_state['mold_risk_level'])
+            print(f"MQTT Payload from actuator: {actuator_state}")
 
-        # # === PLAN ===
-        # if topic == TOPIC_PLAN:
-        #     # Expecting: {"plan": ["Switch off light", "Open door"]}
-        #     if isinstance(data, dict) and "plan" in data:
-        #         plan_instructions = data["plan"]
         # === PLAN ===
         if topic == TOPIC_PLAN:
             # Expecting a simple list: ["Switch off light", "Open door"]
@@ -133,28 +130,17 @@ def labeled_box(icon_url, content_id):
     return html.Div([
         html.Img(src=icon_url, style={'height': '30px', 'marginRight': '10px'}),
         html.Div(id=content_id, style={'fontSize': '25px', 'fontWeight': 'bold'})
-    ], style={
+    ],
+        style={
         'display': 'flex',
         'width' : '100%',
         'alignItems': 'center',
         'justifyContent': 'center',
-        # 'border': '1px solid #ccc',
-        # 'padding': '15px 20px',
-        # 'margin': '10px',
-        # 'width': '30%',
-        'height': '100px',
-        # 'borderRadius': '15px',
-        # 'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
-        # 'backgroundColor': '#ffffff'
-    })
+        'textAlign': 'center',
+        'height': '100px'
+    }
+    )
 
-# def make_row(children):
-#     return html.Div(children, style={
-#         'display': 'flex',
-#         'justifyContent': 'space-around',
-#         'flexWrap': 'wrap',
-#         'marginBottom': '20px'
-#     })
 
 def battery_indicator(label, level, max_level=3, color="#4CAF50"):
     filled_percent = (level / max_level) * 100
@@ -197,9 +183,48 @@ def battery_indicator(label, level, max_level=3, color="#4CAF50"):
     })
 
 
+# Helper for styling cards
+def card_style(flex=1, width='100%'):
+    return {
+        'flex': flex,
+        'width': width,
+        'padding': '15px',
+        'backgroundColor': '#ffffff',
+        'borderRadius': '15px',
+        'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
+        'marginBottom': '20px',
+        'display': 'flex',
+        'flexDirection': 'column',
+        'justifyContent': 'space-between',
+        'alignItems': 'center'
+    }
+
+
+
+def column_style():
+    return {
+        'display': 'flex',
+        'flexDirection': 'column',
+        'justifyContent': 'space-between',
+        'width': '30%',
+        'minHeight': '650px'
+    }
+
+def row_style():
+    return {
+        'display': 'flex',
+        'flexDirection': 'row',
+        'justifyContent': 'space-between',
+        'alignItems': 'stretch',
+        # 'width': '100%',
+        'gap': '20px',
+        'marginBottom': '20px',
+        'width' : '210%'
+    }
+
+
 app.layout = html.Div([
-    # Header
-    html.Div([
+html.Div([
         html.Img(
             src="https://img.icons8.com/?size=100&id=FNHbyJNFRRf4&format=png&color=000000",
             style={'height': '60px', 'marginRight': '20px'}
@@ -222,91 +247,70 @@ app.layout = html.Div([
         'marginBottom': '30px'
     }),
 
-    # --- Three Main Cards ---
+    # First Row
     html.Div([
-        # Card 1 - Inside Weather
+        # Outside Weather
         html.Div([
-            html.H3("Inside Weather", style={'textAlign': 'center', 'fontSize': '32px'}),
-            labeled_box("https://img.icons8.com/color/70/temperature--v1.png", 'temp-display'),
-            labeled_box("https://img.icons8.com/color/70/hygrometer.png", 'humidity-display'),
-            labeled_box("https://img.icons8.com/color/70/light-on.png", 'indoor-light-level-display')
-        ], style={
-            'width': '30%',
-            'padding': '15px',
-            'backgroundColor': '#ffffff',
-            'borderRadius': '15px',
-            'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
-            'margin': '10px'
-        }),
+            html.Div([
+                html.H3("Outside Weather", style={'textAlign': 'center', 'fontSize': '32px'}),
+                labeled_box("https://img.icons8.com/color/70/thermometer.png", 'outside-temp-display'),
+                labeled_box("https://img.icons8.com/color/70/hygrometer.png", 'outside-humidity-display'),
+            ], style=card_style(flex=1)),
+            html.Div([
+                html.H3("Actuator Status", style={'textAlign': 'center', 'fontSize': '32px'}),
+                labeled_box("https://img.icons8.com/color/70/fan.png", 'fan-speed-display'),
+                labeled_box("https://img.icons8.com/color/70/conference-call.png", 'seats-display'),
+                labeled_box("https://img.icons8.com/color/70/desk-lamp.png", 'indoor-light-status-display')
+            ], style=card_style(flex=1))
+        ], style=column_style()),
 
-        # Card 2 - Outside Weather
+        # Current Plan
         html.Div([
-            html.H3("Outside Weather", style={'textAlign': 'center', 'fontSize': '32px'}),
-            labeled_box("https://img.icons8.com/color/70/thermometer.png", 'outside-temp-display'),
-            labeled_box("https://img.icons8.com/color/70/hygrometer.png", 'outside-humidity-display'),
-            labeled_box("https://img.icons8.com/color/70/speaker.png", 'noise-display')
-        ], style={
-            'width': '30%',
-            'padding': '15px',
-            'backgroundColor': '#ffffff',
-            'borderRadius': '15px',
-            'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
-            'margin': '10px'
-        }),
+            html.Div([
+            html.Div([
+                # html.H3("Current Plan", style={'textAlign': 'center', 'fontSize': '32px'}),
+                html.Div(id='plan-display', style={'marginTop': '15px'})
+            ], style=card_style(flex=1)),
+            html.Div([
+                html.H3("Interior Atmosphere", style={'textAlign': 'center', 'fontSize': '32px'}),
+                labeled_box("https://img.icons8.com/color/70/temperature--v1.png", 'temp-display'),
+                labeled_box("https://img.icons8.com/color/70/hygrometer.png", 'humidity-display'),
+                labeled_box("https://img.icons8.com/color/70/light-on.png", 'indoor-light-level-display'),
+                labeled_box("https://img.icons8.com/color/70/speaker.png", 'noise-display')
+            ], style=card_style(flex=1))
 
-        # Card 3 - Actuator Status
+            ], style = row_style()),
+            html.Div([
+            # html.H3("Mold Risk", style={'textAlign': 'center', 'fontSize': '32px'}),
+            labeled_box("https://img.icons8.com/color/70/warning-shield.png", 'mold-risk-display')
+        ], style={**card_style(width='205%')})
+
+        ], style=column_style()),
+
+        # Inside Weather
         html.Div([
-            html.H3("Actuator Status", style={'textAlign': 'center', 'fontSize': '32px'}),
-            labeled_box("https://img.icons8.com/color/70/fan.png", 'fan-speed-display'),
-            labeled_box("https://img.icons8.com/color/70/desk-lamp.png", 'indoor-light-status-display'),
-            labeled_box("https://img.icons8.com/color/70/conference-call.png", 'seats-display')
-        ], style={
-            'width': '30%',
-            'padding': '15px',
-            'backgroundColor': '#ffffff',
-            'borderRadius': '15px',
-            'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
-            'margin': '10px'
-        })
+
+        ], style=column_style()),
     ], style={
         'display': 'flex',
         'justifyContent': 'space-around',
-        'flexWrap': 'wrap',
+        'alignItems': 'stretch',
         'marginBottom': '20px',
+        'gap': '20px'
     }),
 
-    # Mold Risk Message
+    # Mold Risk spanning beneath Current Plan + Actuator Status
     html.Div([
-        labeled_box("https://img.icons8.com/color/70/warning-shield.png", 'mold-risk-display')
+
     ], style={
-        'textAlign': 'center',
-        'fontSize': '25px',
-        'marginBottom': '30px',
-        'fontWeight': 'bold',
-        # 'width': '30%',
-        'padding': '15px',
-        'backgroundColor': bg_colour_mold,
-        'borderRadius': '15px',
+        'display': 'flex',
+        'justifyContent': 'center',
+        'alignItems': 'stretch',
+        'marginBottom': '30px'
     }),
 
-    # Graph and Plan Section
+    # Seat Alert
     html.Div([
-        dcc.Graph(id='temp-graph', style={
-            'width': '48%',
-            'display': 'inline-block',
-            'padding': '10px',
-            'borderRadius': '10px',
-            'backgroundColor': '#fff',
-            'boxShadow': '0 4px 10px rgba(0,0,0,0.08)'
-        }),
-        html.Div(id='plan-display', style={
-            'width': '48%',
-            'padding': '20px',
-            'fontSize': '20px',
-            'backgroundColor': '#ffffff',
-            'borderRadius': '10px',
-            'boxShadow': '0 4px 10px rgba(0,0,0,0.08)'
-        }),
         html.Div(
             id='seat-alert-popup',
             children="Vacant seats available!",
@@ -321,22 +325,18 @@ app.layout = html.Div([
                 'borderRadius': '10px',
                 'boxShadow': '0 4px 10px rgba(0,0,0,0.2)',
                 'fontWeight': 'bold',
-                'display': 'none',  # Initially hidden
+                'display': 'none',
             }
-        )
-
-    ], style={'display': 'flex', 'justifyContent': 'space-around'}),
+        )]),
+    # }),
 
     dcc.Interval(id='interval-update', interval=3000, n_intervals=0)
 ], style={
-    # 'backgroundImage': 'url("/assets/lib_bg2.jpg")',
-    # 'backgroundSize': 'cover',
-    # 'backgroundRepeat': 'no-repeat',
-    # 'backgroundPosition': 'center',
     'backgroundColor': '#e4f2f7',
     'minHeight': '100vh',
     'padding': '30px'
 })
+
 
 # ---------- Callback ----------
 @app.callback(
@@ -349,89 +349,56 @@ app.layout = html.Div([
      Output('fan-speed-display', 'children'),
      Output('indoor-light-status-display', 'children'),
      Output('seats-display', 'children'),
-     # Output('mold-index-display', 'children'),
      Output('mold-risk-display', 'children'),
-     Output('temp-graph', 'figure'),
      Output('plan-display', 'children')],
     [Input('interval-update', 'n_intervals')]
 )
 
 def update_dashboard(n):
-    print(sensor_state)
+    # print(sensor_state)
     now = datetime.datetime.now().strftime('%H:%M:%S')
     timestamps.append(now)
     temperature_data.append(sensor_state['inside_temperature'])
     noise_data.append(sensor_state['sound'])
 
-    # mold_risk_level = "High" if actuator_state['mold_risk_level'] > 7 else "Low"
-    # fan_status = "ON" if actuator_state['fan_speed'] > 0 else "OFF"
-    # light_status = "ON" if sensor_state['raw_light'] > 0 else "OFF"
-    # noise_level = "High" if sensor_state['sound'] > 20 else "Low"
-
     fan_speed_div = battery_indicator("Fan Speed", actuator_state['fan_speed'], max_level=3, color="#4caf50")
 
-    indoor_light_div = battery_indicator("Indoor Light", actuator_state['led_level'], max_level=3,
+    indoor_light_div = battery_indicator("Indoor Light", actuator_state['light_level'], max_level=3,
                                          color="#ffc107")
     vacancy = 1 if sensor_state['ultrasonic']> 50 else 0
-
-    # Color-coded HTML components
-    # fan_status_div = html.Div([
-    #     html.Span("Fan Status: ", style={'color': 'black'}),
-    #     html.Span("ON" if fan_status else "OFF", style={
-    #         'color': '#009900' if fan_status else '#e74c3c'
-    #     })
-    # ], style={'textAlign': 'center'})
-
-    # mold_risk_div = html.Div([
-    #     html.Span("Risk of Mold: ", style={'color': 'black'}),
-    #     html.Span(mold_risk, style={
-    #         'color': '#e74c3c' if mold_risk == 'High' else '#009900'
-    #     })
-    # ], style={'textAlign': 'center'})
-
-    # light_status_div = html.Div([
-    #     html.Span("Indoor Light: ", style={'color': 'black'}),
-    #     html.Span("ON" if light_status else "OFF", style={
-    #         'color': '#009900' if light_status else '#e74c3c'
-    #     })
-    # ], style={'textAlign': 'center'})
-    #
-    # noise_level_div = html.Div([
-    #     html.Span("Noise Level: ", style={'color': 'black'}),
-    #     html.Span("High" if noise_level else "Low", style={
-    #         'color': '#009900' if noise_level else '#e74c3c'
-    #     })
-    # ], style={'textAlign': 'center'})
 
     temp_fig = go.Figure(go.Scatter(x=list(timestamps), y=list(temperature_data), mode='lines+markers'))
     temp_fig.update_layout(title='Temperature Over Time', xaxis_title='Time', yaxis_title='°C',
                            plot_bgcolor='#fefefe', paper_bgcolor='#ffffff')
 
-    #noise_fig = go.Figure(go.Scatter(x=list(timestamps), y=list(noise_data), mode='lines+markers'))
-    #noise_fig.update_layout(title='Noise Over Time', xaxis_title='Time', yaxis_title='dB',
-    #                        plot_bgcolor='#fefefe', paper_bgcolor='#ffffff')
-    plan_html = [html.H3("Current Plan Generated", style={'marginBottom': '10px'})]
+    plan_html = [html.H3("Current Plan", style={'textAlign': 'center', 'fontSize': '32px'})]
+    # for i, instr in enumerate(plan_instructions, start=1):
+    #     plan_html.append(html.Div(f"{i}. {instr}", style={'fontSize':'25px','marginBottom': '5px', 'fontWeight': 'bold'}))
     for i, instr in enumerate(plan_instructions, start=1):
-        plan_html.append(html.Div(f"{i}. {instr}", style={'marginBottom': '5px'}))
+        plan_html.append(
+            html.Div(
+                f"{i}. {instr}",
+                style={
+                    'fontSize': '25px',
+                    'marginBottom': '20px',  # Increased bottom space
+                    'fontWeight': 'bold'
+                }
+            )
+        )
+
     return (
         f"Temperature: {sensor_state['inside_temperature']} °C",
         f"Humidity: {sensor_state['inside_humidity']} %",
         f"Lighting Intensity: {sensor_state['raw_light']}",
         f"Temperature: {sensor_state['outside_temperature']} °C",
         f"Humidity: {sensor_state['outside_humidity']} %",
-        #f"Fan Speed: {actuator_state['fan_speed']}",
-        f"Noise Level: {actuator_state['noise_level']}",
+        f"Noise Level: {actuator_state['sound_level']}",
         fan_speed_div,
         indoor_light_div,
         f"Vacant Seats: {vacancy}",
-        # f"Mold Index: {sensor_state['mold_index']}",
         f"Mold Risk: {sensor_state['mold_risk_level']}",
-        # f"Mold Risk: {mold_risk_level}",
-        #noise_level_div,
-        temp_fig,
         plan_html
     )
-from dash import Output, Input
 
 @app.callback(
     Output('seat-alert-popup', 'style'),
@@ -458,6 +425,21 @@ def toggle_popup(n, seat_info):
     except:
         pass
     return {'display': 'none'}
+
+# @app.callback(
+#     Output('mold-risk-display', 'style'),
+#     Input('interval-update', 'n_intervals')  # Simulate sensor check/update
+# )
+# def update_mold_card_style(n):
+#     if sensor_state['mold_risk_level'] == 'HIGH':
+#         bg_colour_mold = '#FF9793'
+#     elif sensor_state['mold_risk_level'] == 'MEDIUM':
+#         bg_colour_mold = '#FFFFC5'
+#     elif sensor_state['mold_risk_level'] == 'LOW':
+#         bg_colour_mold = '#e6ffe6'
+#
+#     # Merge background color into base style
+#     return {**card_style(width='205%'),'backgroundColor': bg_colour_mold,'width': '100%','height': '100%'}
 
 
 if __name__ == '__main__':
