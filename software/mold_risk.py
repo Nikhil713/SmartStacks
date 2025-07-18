@@ -21,7 +21,7 @@ def check_mold_risk(int_temp, int_rh, ext_temp, ext_rh):
     int_dp = dew_point(int_temp, int_rh)
     ext_dp = dew_point(ext_temp, ext_rh)
     mold_risk_level = {
-        "High Humidity (RH > 60%)": int_rh > 60,
+        "High Humidity (RH > 60%)": int_rh > 75,
         "Dew Point Gap (Indoor DP - Outdoor DP > 3°C)": (int_dp - ext_dp) > 3,
         "Condensation Risk (Indoor Temp ≤ DP)": int_temp <= int_dp
     }
