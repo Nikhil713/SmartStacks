@@ -42,8 +42,6 @@ CLIENT_ID = "raspberrypi_sensor_01"    # unique identifier
 mqtt_client = mqtt.Client(client_id=CLIENT_ID)
 mqtt_client.connect(BROKER, PORT, 60)
 
-log_file_path = "/path/to/error.log"
-
 def mqtt_callback(data, TOPIC):
 
       payload = json.dumps(data)
