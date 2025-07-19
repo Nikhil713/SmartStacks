@@ -51,6 +51,10 @@ def mqtt_callback(data, TOPIC):
       print(f"Published → {payload}")
       time.sleep(5)
 
+def mqtt_file_send(MQTT_TOPIC, entry):
+      mqtt_client.publish(MQTT_TOPIC, entry)
+
+
 
 # def follow(file):
 #     file.seek(0, 2)  # Move to end of file

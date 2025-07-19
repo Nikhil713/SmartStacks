@@ -1,16 +1,14 @@
 from datetime import datetime
-import paho.mqtt.client as mqtt
+from mqtt_client import mqtt_file_send
 
 # MQTT configuration
-MQTT_BROKER = "test.mosquitto.org" 
-MQTT_PORT = 1883
-MQTT_TOPIC = "device/logs"
-CLIENT_ID = "raspberrypi_sensor_01" 
 
-CLIENT_ID = "raspberrypi_sensor_01"
-LOG_FILE = "device_log.txt"  # Log file 
-mqtt_client = mqtt.Client(client_id=CLIENT_ID)
-mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+MQTT_TOPIC = "device/logs"
+LOG_FILE = "device_log.txt"  # Log file
+
+# mqtt_client = mqtt.Client(client_id=CLIENT_ID)
+# mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     entry = f"[{timestamp}] {message}\n"
@@ -18,5 +16,5 @@ def log(message):
         f.write(entry)
 
         # Send via MQTT
-        mqtt_client.publish(MQTT_TOPIC, entry)
+        mqtt_file_send(MQTT_TOPIC, entry)
     f.close()
