@@ -41,7 +41,7 @@ def init_sensor_state():
         'sound': 70.0,
         'outside_temperature' : 30.0,
         'outside_humidity' : 55.0,
-        'mold_risk_level': 'LOW'
+        'mold_risk_level': 'HIGH'
         # 'mold_index' : 8
         # 'vacant_seats': 1,
         # 'noise_level': 'High',
@@ -49,7 +49,7 @@ def init_sensor_state():
     }
 def init_actuator_state():
     return {
-        'vacant_seats': 1,
+        'occupied': True,
         'fan_speed': 2,
         'light_level' : 3,
         "sound_level": "Off"
@@ -77,7 +77,7 @@ def on_message(client, userdata, msg):
     try:
         topic = msg.topic
         payload = msg.payload.decode().strip()
-        # print(f"MQTT Payload from {topic}: {payload}")
+        print(f"MQTT Payload from {topic}: {payload}")
 
         data = json.loads(payload)  # Parse JSON data
 
@@ -97,7 +97,7 @@ def on_message(client, userdata, msg):
         if topic == TOPIC_ACTUATORS:
             actuator_state['fan_speed'] = data.get("fan_speed", actuator_state['fan_speed'])
             actuator_state['light_level'] = data.get("light_level", actuator_state['light_level'])
-            actuator_state['vacant_seats'] = data.get("vacant_seats", actuator_state['vacant_seats'])
+            actuator_state['occupied'] = data.get("occupied", actuator_state['occupied'])
             actuator_state['sound_level'] = data.get("sound_level", actuator_state['sound_level'])
             # actuator_state['vacant_seats'] = 1 if sensor_state['ultrasonic']> 50 else 0
             # actuator_state['mold_risk_level'] = data.get("mold_risk_level", actuator_state['mold_risk_level'])
@@ -301,10 +301,24 @@ html.Div([
             ], style=card_style(flex=1))
 
             ], style = row_style()),
-            html.Div([
+        #     html.Div([
+        #     # html.H3("Mold Risk", style={'textAlign': 'center', 'fontSize': '32px'}),
+        #     labeled_box("https://img.icons8.com/color/70/warning-shield.png", 'mold-risk-display')
+        # ], style={**card_style(width='205%')})
+            html.Div(id='mold-div',children = [
             # html.H3("Mold Risk", style={'textAlign': 'center', 'fontSize': '32px'}),
             labeled_box("https://img.icons8.com/color/70/warning-shield.png", 'mold-risk-display')
-        ], style={**card_style(width='205%')})
+        ], style={ 'flex': 1,
+        'padding': '15px',
+        'backgroundColor': '#ffffff',
+        'borderRadius': '15px',
+        'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
+        'marginBottom': '20px',
+        'display': 'flex',
+        'justifyContent': 'space-between',
+        'alignItems': 'center',
+        'width' :'205%'})
+
 
         ], style=column_style()),
 
@@ -386,7 +400,8 @@ def update_dashboard(n):
 
     indoor_light_div = battery_indicator("Indoor Light", actuator_state['light_level'], max_level=3,
                                          color="#ffc107")
-    vacancy = 1 if sensor_state['ultrasonic']> 50 else 0
+    # vacancy = 1 if actuator_state['occupied'] == False else 0
+    vacancy = 0 if sensor_state['ultrasonic']<=20 else 1
 
     temp_fig = go.Figure(go.Scatter(x=list(timestamps), y=list(temperature_data), mode='lines+markers'))
     temp_fig.update_layout(title='Temperature Over Time', xaxis_title='Time', yaxis_title='°C',
@@ -410,7 +425,7 @@ def update_dashboard(n):
     return (
         f"Temperature: {sensor_state['inside_temperature']} °C",
         f"Humidity: {sensor_state['inside_humidity']} %",
-        f"Lighting Intensity: {sensor_state['raw_light']}",
+        f"LDR Reading: {sensor_state['raw_light']}",
         f"Temperature: {sensor_state['outside_temperature']} °C",
         f"Humidity: {sensor_state['outside_humidity']} %",
         f"Noise Level: {actuator_state['sound_level']}",
@@ -447,20 +462,34 @@ def toggle_popup(n, seat_info):
         pass
     return {'display': 'none'}
 
-# @app.callback(
-#     Output('mold-risk-display', 'style'),
-#     Input('interval-update', 'n_intervals')  # Simulate sensor check/update
-# )
-# def update_mold_card_style(n):
-#     if sensor_state['mold_risk_level'] == 'HIGH':
-#         bg_colour_mold = '#FF9793'
-#     elif sensor_state['mold_risk_level'] == 'MEDIUM':
-#         bg_colour_mold = '#FFFFC5'
-#     elif sensor_state['mold_risk_level'] == 'LOW':
-#         bg_colour_mold = '#e6ffe6'
-#
-#     # Merge background color into base style
-#     return {**card_style(width='205%'),'backgroundColor': bg_colour_mold,'width': '100%','height': '100%'}
+@app.callback(
+    Output('mold-div', 'style'),
+    Input('interval-update', 'n_intervals')  # Simulate sensor check/update
+)
+def update_mold_card_style(n):
+    if sensor_state['mold_risk_level'] == 'HIGH':
+        bg_colour_mold = '#FF9793'
+    elif sensor_state['mold_risk_level'] == 'MEDIUM':
+        bg_colour_mold = '#FFFFC5'
+    elif sensor_state['mold_risk_level'] == 'LOW':
+        bg_colour_mold = '#e6ffe6'
+
+    # Merge background color into base style
+    return {
+        'flex': 1,
+        'padding': '15px',
+        'borderRadius': '15px',
+        'boxShadow': '0 4px 10px rgba(0, 0, 0, 0.08)',
+        'marginBottom': '20px',
+        'display': 'flex',
+        'justifyContent': 'space-between',
+        'alignItems': 'center',
+        'width' :'205%',
+        'backgroundColor': bg_colour_mold,
+        }
+
+
+
 
 @app.callback(
     Output("download-data", "data"),
