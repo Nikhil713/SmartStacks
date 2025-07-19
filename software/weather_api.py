@@ -1,7 +1,7 @@
 # weather_api.py
 
 import requests
-
+from logger import log
 
 # API configurations
 API_KEY = "76e536f0e9933666a4713c1b5eb2f94a"
@@ -21,6 +21,7 @@ def get_weather():
         return temp, humidity
     except Exception as e:
         print(f"Weather API error: {e}")
+        log(f"Weather API error: {e}")
         return None, None
 
 temp, humidity = get_weather()

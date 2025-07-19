@@ -1,5 +1,6 @@
 import smtplib
 from email.message import EmailMessage
+from logger import log
 
 # Replace these with appropriate values
 EMAIL_SENDER = 'nikhilbabu213@gmail.com'
@@ -20,3 +21,4 @@ def send_email_alert(subject, body):
         print("Email alert sent successfully.")
     except Exception as e:
         print(f"Failed to send email: {e}")
+        log(f"Failed to send email: {e}")

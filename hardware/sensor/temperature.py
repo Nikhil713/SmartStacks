@@ -1,5 +1,6 @@
 import grovepi
 from mqtt.mqtt_client import mqtt_callback
+from logger import log
 
 # ------------ Configuration ------------
 TEMP_SENSOR_PORT = 4  # D4 port for temperature sensor (DHT11)
@@ -14,4 +15,5 @@ def read_temperature():
     
     except Exception as e:
         print(f"[TEMP] Error: {e}")
+        log(f"[TEMP] Error: {e}")
         return None

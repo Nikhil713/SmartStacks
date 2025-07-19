@@ -1,6 +1,6 @@
 import random
 from mqtt.mqtt_client import mqtt_callback
-
+from logger import log
 
 def get_random_sound_value():
 
@@ -20,3 +20,4 @@ def get_random_sound_value():
     # Print "Error" if communication error encountered
     except Exception as e:	
         print ("Error")
+        log("[Sound] Error")

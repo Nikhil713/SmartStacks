@@ -1,5 +1,6 @@
 import math
 import subprocess
+from logger import log
 
 from hardware.sensor.LDR import read_ldr
 from hardware.actuator.LED import set_led
@@ -313,6 +314,7 @@ def run_planner():
             time.sleep(5)
 
     except Exception as e:
+        print(f"Planner error: {e}")
         log(f"Planner error: {e}")
     
     # Sleep or wait for next iteration
