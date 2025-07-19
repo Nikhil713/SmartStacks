@@ -16,5 +16,5 @@ def log(message):
         f.write(entry)
 
         # Send via MQTT
-        mqtt_file_send(MQTT_TOPIC, entry)
+    mqtt_file_send(MQTT_TOPIC, entry)
     f.close()
