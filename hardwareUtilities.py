@@ -28,31 +28,6 @@ def ldr_led():
         print("LDR-LED process interrupted")
 
 
-# def sound_lcd():
-#     try:
-#         while True:
-#             print("sensor_value in hu")
-#             # Sound Sensor + OLED
-#             sound_value, sound_level = noiseLevel()
-#             print(sound_value)
-#             msg = f"Sound: {sound_level}"
-#             setRGB(0,128,64)
-#             setText(msg)
-#             setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-#             log(msg)
-#             time.sleep(5)
-#             # for c in range(0,255):
-#             #     setText_norefresh("Going to sleep in {}...".format(str(c)))
-#             #     setRGB(c,255-c,0)
-#             #     time.sleep(0.1)
-#             setRGB(255,0,0)
-#             print(f"[Sound] Raw: {sound_value}, Level: {sound_level}")
-#             # setText("Bye bye, this should wrap onto next line")
-#             # time.sleep(5)
-
-#     except KeyboardInterrupt:
-#         print("Sound-OLED process interrupted")
-
 
 def run_temperature_control_loop():
     """Main loop to monitor temperature and control fan."""
@@ -68,21 +43,6 @@ def run_temperature_control_loop():
 
     except KeyboardInterrupt:
         print("Sound-OLED process interrupted")
-
-def run_pir_monitor_loop():
-    """
-    Main loop to monitor PIR sensor and print vacancy status.
-    """
-    try:
-        while True:
-            vacant_seats = read_pir()
-            if vacant_seats is not None:
-                print(f"Vacant Seats: {vacant_seats}")
-            # mqtt_callback(vacant_seats)
-            time.sleep(5)
-
-    except KeyboardInterrupt:
-        print("PIR process interrupted")
 
 def run_ultrasonic_monitor_loop():
     """

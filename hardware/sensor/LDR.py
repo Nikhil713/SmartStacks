@@ -1,5 +1,6 @@
 import grovepi
 from mqtt.mqtt_client import mqtt_callback
+from logger import log
 
 # Connect the Grove Light Sensor to analog port A0
 # SIG,NC,VCC,GND
@@ -28,3 +29,5 @@ def read_ldr():
     # Print "Error" if communication error encountered
     except IOError:				
         print ("Error")
+        log("[LDR] Error")
+

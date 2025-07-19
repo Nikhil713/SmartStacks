@@ -48,3 +48,22 @@ def mqtt_callback(data, TOPIC):
       mqtt_client.publish(TOPIC, payload)
       print(f"Published → {payload}")
       time.sleep(5)
+
+def mqtt_file_send(MQTT_TOPIC, entry):
+      mqtt_client.publish(MQTT_TOPIC, entry)
+
+
+
+# def follow(file):
+#     file.seek(0, 2)  # Move to end of file
+#     while True:
+#         line = file.readline()
+#         if not line:
+#             time.sleep(0.5)
+#             continue
+#         yield line
+
+# with open(log_file_path, "r") as logfile:
+#     loglines = follow(logfile)
+#     for line in loglines:
+#         mqtt_client.publish("smartstacks/log", line.strip())
