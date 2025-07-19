@@ -3,7 +3,7 @@ from mqtt.mqtt_client import mqtt_callback
 from logger import log
 
 # ------------ Configuration ------------
-TEMP_SENSOR_PORT = 4  # D4 port for temperature sensor (DHT11)
+TEMP_SENSOR_PORT = 8  # D4 port for temperature sensor (DHT11)
 
 
 # ------------ Temperature Reading ------------
