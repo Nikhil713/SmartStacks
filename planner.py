@@ -17,6 +17,7 @@ from software.weather_api import get_weather
 
 from software.mold_risk import check_mold_risk
 from hardware.actuator.LCD_Display import *
+from software.actuators.email import send_email_alert
 
 from mqtt.mqtt_client import mqtt_callback
 from logger import log
@@ -39,7 +40,6 @@ def get_sensor_data_and_create_problem_file():
     # Mold risk - compound sensor
     # risk, mold_risk_level = 1,2
     risk, mold_risk_level = check_mold_risk(temp, humidity, api_temp, api_humidity)
-    
     #Sensor data
     sensor_data= {
         'inside_temperature': temp,
@@ -199,78 +199,93 @@ def execute_plan(parsed_plan):
                       "send-email-for-high-mold-index"
                       ]
     mqtt_plan = []
+    actuator_data = {}
     for action_name in parsed_plan:
         if action_name in proper_actions:
             # print(f"Executing action: {action_name}")
-            execute_actions(action_name)
+            execute_actions(action_name, actuator_data)
             mqtt_plan.append(action_name)
     # print(f"MQTT plan : {mqtt_plan}")
     mqtt_callback(mqtt_plan, "smartstacks/plan")
+        
+    # Also handle how to send actutator status to MQTT broker
+    print(f"Actuator : {actuator_data}")
+    mqtt_callback(actuator_data, "smartstacks/actuators")
     
     
 
-def execute_actions(action_name):
+def execute_actions(action_name, actuator_data):
     if action_name == "adjust-light-to-level-three":
         print(f"Executing action: {action_name}")
         set_led(3)
+        actuator_data['light_level'] = 3
     elif action_name == "adjust-light-to-level-two":
         print(f"Executing action: {action_name}")
         set_led(2)
+        actuator_data['light_level'] = 2
     elif action_name in ["turn-on-light-to-level-one-very-dark", "turn-on-light-to-level-one-dark", "adjust-light-to-level-one"]:
         set_led(1)
         print(f"Executing action: {action_name}")
+        actuator_data['light_level'] = 1
     elif action_name == "turn-off-light":
         set_led(0)
         print(f"Executing action: {action_name}")
+        actuator_data['light_level'] = 0
 
     elif action_name == "turn-on-fan-to-level-three":
         print(f"Executing action: {action_name}")
-        # set_fan_speed(3)
+        actuator_data['fan_speed'] = 3
     elif action_name == "turn-on-fan-to-level-two":
         print(f"Executing action: {action_name}")
-        # set_fan_speed(2)
+        actuator_data['fan_speed'] = 2
     elif action_name == "turn-on-fan-to-level-one":
         print(f"Executing action: {action_name}")
-        # set_fan_speed(1)
+        actuator_data['fan_speed'] = 1
     elif action_name == "turn-on-fan-to-reduce-humidity":
-        # set_fan_speed(3)
+        actuator_data['fan_speed'] = 3
         print(f"Executing action: {action_name}")
     elif action_name == "turn-off-fan":
         print(f"Executing action: {action_name}")
-        # set_fan_speed(0)
+        actuator_data['fan_speed'] = 0
 
     elif action_name == "display-quiet-in-lcd-display":
         print(f"Executing action: {action_name}")
         setRGB(0,255,0)
-        level = "Quiet"
-        setText(level)
+        actuator_data['sound_level'] = "Quiet"
+        sound_level = "Quiet"
+        setText(sound_level)
+        
     elif action_name == "display-normal-in-lcd-display":
         print(f"Executing action: {action_name}")
         setRGB(125,125,125)
-        level = "Normal"
-        setText(level)
+        sound_level = "Normal"
+        actuator_data['sound_level'] = "Normal"
+        setText(sound_level)
     elif action_name == "display-loud-in-lcd-display":
         print(f"Executing action: {action_name}")
         setRGB(255,0,0)
-        level = "Loud"
-        setText(level)
+        sound_level = "Loud"
+        actuator_data['sound_level'] = "Loud"
+        setText(sound_level)
     elif action_name == "turn-off-lcd-display":
         print(f"Executing action: {action_name}")
         setRGB(0, 0, 0)
         setText("")
+        actuator_data['sound_level'] = "Off"
         
     elif action_name == "display-seat-occupied":
         print(f"Executing action: {action_name}")
-        #send notification
+        actuator_data['occupied'] = True
         
-    elif action_name == "send-alert-for-mold-risk-high":
+    elif action_name == "send-email-for-high-mold-index":
         print(f"Executing action: {action_name}")
-        #send email here
+        send_email_alert(
+        subject=" Mold Risk Alert - High",
+        body="Mold risk has reached a high level in the Smart Library. Immediate action is recommended!"
+    )
     else:
         print(f"Unknown action: {action_name}")
-    
-    # Also handle how to send actutator status to MQTT broker
-    
+
 
 def run_planner():
     
