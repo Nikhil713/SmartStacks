@@ -8,6 +8,11 @@ import threading
 import paho.mqtt.client as mqtt
 import re
 import json
+import pandas as pd
+import io
+import base64
+from dash import ctx
+
 
 # Constants
 
@@ -236,10 +241,26 @@ html.Div([
             'textAlign': 'center',
             'flex': 1
         }),
-        html.Img(
-            src="https://img.icons8.com/?size=100&id=FNHbyJNFRRf4&format=png&color=000000",
-            style={'height': '60px', 'marginLeft': '20px'}
-        ),
+        html.Div([
+            html.Button("Download Data", id="download-button", n_clicks=0, style={
+                'position': 'absolute',
+                'top': '35px',
+                'right': '30px',
+                'padding': '10px 20px',
+                'fontSize': '16px',
+                'backgroundColor': '#0074D9',
+                'color': 'white',
+                'border': 'none',
+                'borderRadius': '5px',
+                'cursor': 'pointer'
+            }),
+            dcc.Download(id="download-data")
+        ]),
+
+        # html.Img(
+        #     src="https://img.icons8.com/?size=100&id=FNHbyJNFRRf4&format=png&color=000000",
+        #     style={'height': '60px', 'marginLeft': '20px'}
+        # ),
     ], style={
         'display': 'flex',
         'alignItems': 'center',
@@ -440,6 +461,33 @@ def toggle_popup(n, seat_info):
 #
 #     # Merge background color into base style
 #     return {**card_style(width='205%'),'backgroundColor': bg_colour_mold,'width': '100%','height': '100%'}
+
+@app.callback(
+    Output("download-data", "data"),
+    Input("download-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def generate_excel(n_clicks):
+    try:
+        # Combine sensor and actuator data
+        combined_data = {
+            "Parameter": list(sensor_state.keys()) + list(actuator_state.keys()),
+            "Value": list(sensor_state.values()) + list(actuator_state.values())
+        }
+
+        df = pd.DataFrame(combined_data)
+
+        # Save to Excel in-memory
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='SmartLibraryData')
+
+        output.seek(0)
+
+        return dcc.send_bytes(output.read(), filename="smart_library_data.xlsx")
+    except Exception as e:
+        print("Error generating Excel:", e)
+        return None
 
 
 if __name__ == '__main__':
