@@ -21,7 +21,7 @@ from hardware.actuator.LCD_Display import *
 from software.actuators.email import send_email_alert
 
 from mqtt.mqtt_client import mqtt_callback
-from logger import log
+
 
 import requests
 
@@ -60,7 +60,23 @@ def get_sensor_data_and_create_problem_file():
         print(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
         write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
 
+    if (math.isnan(temp)):
+        log("Error: Temp is NaN")
 
+    if (math.isnan(humidity)):
+        log("Error: Humidity is NaN")
+
+    if (math.isnan(raw_light)):
+        log("Error: Light is NaN")
+
+    if (math.isnan(sound_value)):
+        log("Error: Sound is NaN")
+
+    if (math.isnan(mold_risk_level)):
+        log("Error: Mold Risk is NaN")
+
+    if (math.isnan(distance)):
+        log("Error: Distance is NaN")
 
 def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance):
     filepath = 'ai_planning/problem.pddl'
