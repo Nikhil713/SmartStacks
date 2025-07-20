@@ -1,5 +1,6 @@
 import grovepi
 from mqtt.mqtt_client import mqtt_callback
+from logger import log
 
 
 # --- Configuration ---
@@ -19,4 +20,5 @@ def read_ultrasonic():
     
     except IOError:
         print("Error reading ultrasonic sensor")
+        log("[ULTRASONIC] Error")
         return None

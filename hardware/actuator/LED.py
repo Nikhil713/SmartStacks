@@ -1,4 +1,5 @@
 import grovepi
+from logger import log
 
 #https://github.com/DexterInd/GrovePi
 
@@ -31,3 +32,4 @@ def set_led(intensity):
 
     except IOError:
         print("Error")
+        log("[LED] Error")

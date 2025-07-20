@@ -8,6 +8,7 @@ import sys
 from hardware.actuator.LED import set_led
 from hardware.actuator.LCD_Display import *
 #import schedule
+from logger import log
 
 # Create a shared stop signal
 stop_event = Event()
@@ -44,6 +45,7 @@ if __name__ == '__main__':
 
 
     except KeyboardInterrupt:
+        log("Main process interrupted - Terminating child process")
         print("Main process interrupted - Terminating child process")
         stop_event.set()  # Signal all threads to stop
         # p1.terminate()
