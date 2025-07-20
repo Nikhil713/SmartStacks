@@ -5,7 +5,6 @@ from hardware.actuator.LED import set_led
 from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
-from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 from logger import log
 from mqtt.mqtt_client import mqtt_callback
@@ -20,7 +19,7 @@ def ldr_led():
             # pwm = set_led(intensity)
             ldr_msg = f"LDR raw={raw}, intensity={intensity}"
             # print(ldr_msg)
-            log(ldr_msg)
+            # log(ldr_msg)
             # mqtt_callback(ldr_msg)
             time.sleep(5)
 
@@ -37,7 +36,7 @@ def run_temperature_control_loop():
             control_fan_based_on_temperature(temp)
             msgTemp = f"Raw reading: temp={temp}, humidity={humidity}"
             print(msgTemp)
-            log(msgTemp)
+            # log(msgTemp)
             # mqtt_callback(msgTemp)
             time.sleep(5)
 
