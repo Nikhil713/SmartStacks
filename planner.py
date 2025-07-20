@@ -11,7 +11,6 @@ from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
 
-from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 
 from software.weather_api import get_weather
