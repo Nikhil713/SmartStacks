@@ -13,6 +13,9 @@ import io
 import base64
 from dash import ctx
 
+# Global logging state
+logged_data = []
+last_logged_time = datetime.datetime.now() - datetime.timedelta(minutes=5)
 
 # Constants
 
@@ -72,14 +75,16 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe([(TOPIC_SENSORS, 0), (TOPIC_ACTUATORS, 0), (TOPIC_PLAN, 0)])
 
 def on_message(client, userdata, msg):
-    global plan_instructions
+    global plan_instructions, last_logged_time, logged_data
 
     try:
         topic = msg.topic
         payload = msg.payload.decode().strip()
         print(f"MQTT Payload from {topic}: {payload}")
 
-        data = json.loads(payload)  # Parse JSON data
+        data = json.loads(payload)
+
+        now = datetime.datetime.now()
 
         # === SENSORS ===
         if topic == TOPIC_SENSORS:
@@ -88,10 +93,9 @@ def on_message(client, userdata, msg):
             sensor_state['raw_light'] = data.get("raw_light", sensor_state['raw_light'])
             sensor_state['ultrasonic'] = data.get("ultrasonic", sensor_state['ultrasonic'])
             sensor_state['sound'] = data.get("sound", sensor_state['sound'])
-            sensor_state['outside_temperature'] = round(data.get("outside_temperature", sensor_state['outside_temperature']),2)
+            sensor_state['outside_temperature'] = round(data.get("outside_temperature", sensor_state['outside_temperature']), 2)
             sensor_state['outside_humidity'] = data.get("outside_humidity", sensor_state['outside_humidity'])
             sensor_state['mold_risk_level'] = data.get("mold_risk_level", sensor_state['mold_risk_level'])
-
 
         # === ACTUATORS ===
         if topic == TOPIC_ACTUATORS:
@@ -99,16 +103,20 @@ def on_message(client, userdata, msg):
             actuator_state['light_level'] = data.get("light_level", actuator_state['light_level'])
             actuator_state['occupied'] = data.get("occupied", actuator_state['occupied'])
             actuator_state['sound_level'] = data.get("sound_level", actuator_state['sound_level'])
-            # actuator_state['vacant_seats'] = 1 if sensor_state['ultrasonic']> 50 else 0
-            # actuator_state['mold_risk_level'] = data.get("mold_risk_level", actuator_state['mold_risk_level'])
-            print(f"MQTT Payload from actuator: {actuator_state}")
 
         # === PLAN ===
-        if topic == TOPIC_PLAN:
-            # Expecting a simple list: ["Switch off light", "Open door"]
-            if isinstance(data, list):
-                plan_instructions = data
+        if topic == TOPIC_PLAN and isinstance(data, list):
+            plan_instructions = data
 
+        # === LOGGING EVERY 5 MINUTES ===
+        if (now - last_logged_time) >= datetime.timedelta(minutes=1):
+            snapshot = {
+                "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+                **sensor_state,
+                **actuator_state
+            }
+            logged_data.append(snapshot)
+            last_logged_time = now
 
     except json.JSONDecodeError:
         print("Failed to decode JSON:", payload)
@@ -498,25 +506,22 @@ def update_mold_card_style(n):
 )
 def generate_excel(n_clicks):
     try:
-        # Combine sensor and actuator data
-        combined_data = {
-            "Parameter": list(sensor_state.keys()) + list(actuator_state.keys()),
-            "Value": list(sensor_state.values()) + list(actuator_state.values())
-        }
+        if not logged_data:
+            print("No data to export")
+            return None
 
-        df = pd.DataFrame(combined_data)
+        df = pd.DataFrame(logged_data)
 
-        # Save to Excel in-memory
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='SmartLibraryData')
+            df.to_excel(writer, index=False, sheet_name='SmartLibraryLogs')
 
         output.seek(0)
-
-        return dcc.send_bytes(output.read(), filename="smart_library_data.xlsx")
+        return dcc.send_bytes(output.read(), filename="smart_library_logs.xlsx")
     except Exception as e:
         print("Error generating Excel:", e)
         return None
+
 
 
 if __name__ == '__main__':
