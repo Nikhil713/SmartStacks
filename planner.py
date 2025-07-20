@@ -75,7 +75,7 @@ def get_sensor_data_and_create_problem_file():
     if (math.isnan(mold_risk_level)):
         log("Error: Mold Risk is NaN")
 
-    if (math.isnan(distance)):
+    if (distance == 0 or math.isnan(distance) or distance == 65535):
         log("Error: Distance is NaN")
 
 def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance):
