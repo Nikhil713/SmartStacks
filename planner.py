@@ -11,7 +11,6 @@ from hardware.actuator.LCD_Display import *
 from hardware.sensor.temperature import read_temperature
 from hardware.actuator.fan import control_fan_based_on_temperature
 
-from hardware.sensor.pir import read_pir
 from hardware.sensor.ultrasonic import read_ultrasonic
 
 from software.weather_api import get_weather
@@ -21,7 +20,7 @@ from hardware.actuator.LCD_Display import *
 from software.actuators.email import send_email_alert
 
 from mqtt.mqtt_client import mqtt_callback
-from logger import log
+
 
 import requests
 
@@ -60,7 +59,23 @@ def get_sensor_data_and_create_problem_file():
         print(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
         write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance)
 
+    if (math.isnan(temp)):
+        log("Error: Temp is NaN")
 
+    if (math.isnan(humidity)):
+        log("Error: Humidity is NaN")
+
+    if (math.isnan(raw_light)):
+        log("Error: Light is NaN")
+
+    if (math.isnan(sound_value)):
+        log("Error: Sound is NaN")
+
+    if (math.isnan(mold_risk_level)):
+        log("Error: Mold Risk is NaN")
+
+    if (distance == 0 or math.isnan(distance) or distance == 65535):
+        log("Error: Distance is NaN")
 
 def write_problem_pddl(temp, humidity, raw_light, sound_value, mold_risk_level, distance):
     filepath = 'ai_planning/problem.pddl'
